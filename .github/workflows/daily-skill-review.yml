@@ -2,7 +2,7 @@ name: Daily Team Skill Review → Slack
 
 on:
   schedule:
-    - cron: '0 22 * * *'  # 매일 KST 07:00 = UTC 22:00
+    - cron: '0 22 * * *'
   workflow_dispatch:
 
 jobs:
@@ -13,86 +13,93 @@ jobs:
     steps:
       - name: Search GitHub for all 22 teams
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
           DATE=$(date +%Y-%m-%d)
-          REPORT="report.txt"
 
-          cat > "$REPORT" << HEADER
+          # Debug: test gh search works
+          echo "--- DEBUG: testing gh search ---"
+          gh search repos "react design system" --stars=">100" --limit=2 --json fullName,stargazersCount || echo "gh search failed"
+          echo "--- END DEBUG ---"
+
+          cat > report.txt << EOF
           :mag: *매일 GitHub 스킬 검토 리포트* — $DATE
 
           *추천 도구/스킬 요약:*
 
-          HEADER
+          EOF
+          # Remove leading whitespace from heredoc
+          sed -i 's/^          //' report.txt
 
           FOUND=0
 
-          do_search() {
-            local team="$1"
-            local query="$2"
+          search() {
+            local team="$1" query="$2"
+            echo ">> Searching: $team [$query]"
 
             local raw
-            raw=$(gh search repos "$query" --stars=">50" --sort=stars --limit=3 \
-              --json fullName,description,stargazersCount 2>/dev/null || true)
+            raw=$(gh search repos "$query" --stars=">50" --sort=stars --limit=3 --json fullName,description,stargazersCount 2>&1) || true
+            echo "   Result: $(echo "$raw" | head -1)"
 
-            if [ -z "$raw" ] || [ "$raw" = "[]" ]; then
-              return
+            local len=0
+            len=$(echo "$raw" | jq 'length' 2>/dev/null) || len=0
+
+            if [ "$len" -gt 0 ] 2>/dev/null; then
+              echo "$raw" | jq -r --arg t "$team" '.[:2][] |
+                ":small_blue_diamond: *\($t)* — <https://github.com/\(.fullName)|\(.fullName)> (\(.stargazersCount) :star:)\n> \(.description // "No description")\n"' >> report.txt
+              local added
+              added=$(echo "$raw" | jq '[:2] | length')
+              FOUND=$((FOUND + added))
+              echo "   Added: $added"
+            else
+              echo "   No results"
             fi
-
-            local len
-            len=$(echo "$raw" | jq 'length')
-            if [ "$len" -eq 0 ] 2>/dev/null; then
-              return
-            fi
-
-            # Take top 2
-            echo "$raw" | jq -r --arg t "$team" \
-              '.[:2][] | ":small_blue_diamond: *" + $t + "* — <https://github.com/" + .fullName + "|" + .fullName + "> (" + (.stargazersCount|tostring) + " :star:)\n> " + (.description // "설명 없음") + "\n"' \
-              >> "$REPORT"
-
-            FOUND=$((FOUND + $(echo "$raw" | jq '[:2] | length')))
           }
 
-          do_search "01-조사팀"       "market research tool AI"
-          do_search "02-토론팀"       "AI debate framework decision analysis"
-          do_search "03-종합팀"       "report generation AI document automation"
-          do_search "04-퀄리티팀"     "fact checking AI verification automation"
-          do_search "05-기획팀"       "PRD generator AI product roadmap"
-          do_search "06-디자인팀"     "design system generator design tokens"
-          do_search "07-개발팀"       "claude code plugin agentic development"
-          do_search "08-DevOps팀"     "CI CD automation docker deployment"
-          do_search "09-보안팀"       "AI agent security scanner vulnerability"
-          do_search "10-마케팅팀"     "content generation AI SEO marketing"
-          do_search "11-세일즈팀"     "sales automation pitch deck AI"
-          do_search "12-고객지원팀"   "customer journey support automation"
-          do_search "13-데이터팀"     "data pipeline ML evaluation framework"
-          do_search "14-법무팀"       "legal document AI contract analysis"
-          do_search "15-재무팀"       "financial modeling SaaS metrics"
-          do_search "16-리더십팀"     "executive dashboard OKR strategic planning"
-          do_search "17-문서화팀"     "API documentation generator technical writing"
-          do_search "18-브랜드팀"     "brand guidelines generator positioning"
-          do_search "19-전략팀"       "business strategy TAM calculator market sizing"
-          do_search "20-추천엔진팀"   "recommendation engine healthcare AI"
-          do_search "21-인사팀"       "recruitment automation HR analytics"
-          do_search "22-디자인리뷰팀" "design QA visual regression testing"
+          search "01-조사팀"       "market research tool"
+          search "02-토론팀"       "AI debate framework"
+          search "03-종합팀"       "report generation AI"
+          search "04-퀄리티팀"     "fact checking AI"
+          search "05-기획팀"       "PRD generator"
+          search "06-디자인팀"     "design system generator"
+          search "07-개발팀"       "claude code plugin"
+          search "08-DevOps팀"     "CI CD automation AI"
+          search "09-보안팀"       "AI security scanner"
+          search "10-마케팅팀"     "content generation AI"
+          search "11-세일즈팀"     "pitch deck AI"
+          search "12-고객지원팀"   "customer journey tool"
+          search "13-데이터팀"     "ML evaluation framework"
+          search "14-법무팀"       "legal document AI"
+          search "15-재무팀"       "SaaS metrics calculator"
+          search "16-리더십팀"     "OKR framework"
+          search "17-문서화팀"     "API documentation generator"
+          search "18-브랜드팀"     "brand guidelines generator"
+          search "19-전략팀"       "TAM calculator"
+          search "20-추천엔진팀"   "healthcare recommendation AI"
+          search "21-인사팀"       "recruitment automation"
+          search "22-디자인리뷰팀" "visual regression testing"
 
-          echo "_총 ${FOUND}개 추천 발견. 적용 필요 시 알려주세요!_" >> "$REPORT"
+          echo "" >> report.txt
+          echo "_총 ${FOUND}개 추천 발견. 적용 필요 시 알려주세요!_" >> report.txt
 
-          echo "=== REPORT ==="
-          cat "$REPORT"
-          echo "=== FOUND: $FOUND ==="
+          echo ""
+          echo "=== FINAL REPORT ==="
+          cat report.txt
+          echo "=== TOTAL FOUND: $FOUND ==="
 
       - name: Post to Slack
+        if: always()
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
           if [ -z "$SLACK_WEBHOOK_URL" ]; then
-            echo "SLACK_WEBHOOK_URL not set — skipping"
+            echo "SLACK_WEBHOOK_URL not set — printing report only"
             cat report.txt
             exit 0
           fi
 
           TEXT=$(cat report.txt | head -60)
-          curl -s -X POST -H 'Content-type: application/json' \
+          curl -sf -X POST -H 'Content-type: application/json' \
             --data "$(jq -n --arg t "$TEXT" '{text:$t}')" \
-            "$SLACK_WEBHOOK_URL"
+            "$SLACK_WEBHOOK_URL" && echo "Slack posted" || echo "Slack failed"
