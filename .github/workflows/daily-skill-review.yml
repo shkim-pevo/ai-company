@@ -49,7 +49,7 @@ jobs:
           echo "상위 $COUNT개 선정"
 
           # 리포트 작성
-          echo ":mag: *GitHub 스킬 검토 리포트*  \`$DATE\`" > "$R"
+          echo ":mag: *GitHub 스킬 검토 리포트*  ($DATE)" > "$R"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >> "$R"
           echo "" >> "$R"
 
@@ -62,7 +62,7 @@ jobs:
               (.stargazersCount | tostring)
             end) as $stars |
             (.description // "설명 없음") as $desc |
-            ":small_blue_diamond: <https://github.com/\($repo)|*\($short)*>  \`\($stars) ★\`\n    \($desc)\n"
+            ":small_blue_diamond: <https://github.com/\($repo)|*\($short)*>  (\($stars) ★)\n    \($desc)\n"
           ' top3.json >> "$R"
 
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >> "$R"
