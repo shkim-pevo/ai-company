@@ -1,4 +1,4 @@
-name: Daily Team Skill Review → Slack
+name: 매일 팀별 GitHub 스킬 검토 → Slack
 
 on:
   schedule:
@@ -11,7 +11,7 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - name: Search GitHub for all 22 teams
+      - name: 22개 팀별 GitHub 검색
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -24,9 +24,23 @@ jobs:
 
           FOUND=0
 
+          # 영어 description → 한국어 번역 함수
+          translate() {
+            sed \
+              -e 's/A Claude Code plugin that automatically captures everything Claude does during your coding sessions, compresses it with AI.*$/Claude Code 세션 컨텍스트를 자동 캡처하고 AI로 압축하여 다음 세션에 주입하는 플러그인/g' \
+              -e 's/A Claude Code plugin that shows what.*$/Claude Code 실시간 모니터링 — 컨텍스트, 도구, 에이전트, Todo 현황 표시/g' \
+              -e 's/Official.*Anthropic.*managed.*directory.*$/Anthropic 공식 Claude Code 플러그인 디렉토리/g' \
+              -e 's/No description/설명 없음/g' \
+              -e 's/API documentation generator.*$/API 문서 자동 생성 도구/g' \
+              -e 's/visual regression testing.*$/시각적 회귀 테스트 도구/g' \
+              -e 's/An open source.*$/오픈소스 도구/g' \
+              -e 's/A collection.*$/큐레이션 컬렉션/g' \
+              -e 's/A curated.*$/큐레이션 목록/g'
+          }
+
           search() {
             local team="$1" query="$2"
-            echo ">> Searching: $team"
+            echo ">> 검색 중: $team"
 
             local raw
             raw=$(gh search repos "$query" --stars=">50" --sort=stars --limit=3 --json fullName,description,stargazersCount 2>/dev/null || echo "[]")
@@ -36,14 +50,14 @@ jobs:
 
             if [ "$len" -gt 0 ] 2>/dev/null; then
               echo "$raw" | jq -r --arg t "$team" \
-                'limit(2;.[]) | ":small_blue_diamond: *\($t)* — <https://github.com/\(.fullName)|\(.fullName)> (\(.stargazersCount) :star:)\n> \(.description // "No description")\n"' \
-                >> report.txt
+                'limit(2;.[]) | ":small_blue_diamond: *\($t)* — <https://github.com/\(.fullName)|\(.fullName)> (\(.stargazersCount) :star:)\n> \(.description // "설명 없음")\n"' \
+                | translate >> report.txt
               local added
               added=$(echo "$raw" | jq 'limit(2;.[]) | 1' | wc -l | tr -d ' ')
               FOUND=$((FOUND + added))
-              echo "   Found: $added"
+              echo "   발견: $added개"
             else
-              echo "   No results"
+              echo "   결과 없음"
             fi
           }
 
@@ -73,16 +87,16 @@ jobs:
           echo "" >> report.txt
           echo "_총 ${FOUND}개 추천 발견. 적용 필요 시 알려주세요!_" >> report.txt
 
-          echo "=== TOTAL FOUND: $FOUND ==="
+          echo "=== 총 발견: $FOUND개 ==="
           cat report.txt
 
-      - name: Post to Slack
+      - name: Slack 포스팅
         if: always()
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
           if [ -z "$SLACK_WEBHOOK_URL" ]; then
-            echo "SLACK_WEBHOOK_URL not set — printing report only"
+            echo "SLACK_WEBHOOK_URL 미설정 — 리포트만 출력"
             cat report.txt
             exit 0
           fi
@@ -90,4 +104,4 @@ jobs:
           TEXT=$(cat report.txt | head -60)
           curl -sf -X POST -H 'Content-type: application/json' \
             --data "$(jq -n --arg t "$TEXT" '{text:$t}')" \
-            "$SLACK_WEBHOOK_URL" && echo "Slack posted OK" || echo "Slack post failed"
+            "$SLACK_WEBHOOK_URL" && echo "Slack 포스팅 완료" || echo "Slack 포스팅 실패"
