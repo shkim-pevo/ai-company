@@ -1,3 +1,34 @@
+# Frontend Design Skill Upgrade Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Rewrite `skills/frontend-design/SKILL.md` from a visual-only guide into a full-stack design system skill covering UX strategy, visual design, design systems, interaction design, accessibility, and a quality gate.
+
+**Architecture:** Single-file rewrite. The existing SKILL.md (43 lines of content) is replaced with a 7-section comprehensive skill document. Existing "Design Thinking" and "Frontend Aesthetics Guidelines" content is absorbed and enhanced into sections 1 and 3 respectively.
+
+**Tech Stack:** Markdown (SKILL.md with YAML frontmatter)
+
+---
+
+### Task 1: Rewrite SKILL.md — Frontmatter & Section 1 (Design Philosophy)
+
+**Files:**
+- Modify: `skills/frontend-design/SKILL.md`
+
+**Spec reference:** Spec sections 1 (Design Philosophy)
+
+- [ ] **Step 1: Replace the entire SKILL.md with new frontmatter + intro + Section 1**
+
+Write the new file starting with updated YAML frontmatter (expanded description to cover full-stack design), a brief intro paragraph, and Section 1: Design Philosophy.
+
+The frontmatter `description` must mention: UX strategy, visual design, design systems, interaction design, accessibility — so the skill triggers correctly for all design tasks.
+
+Section 1 content from spec:
+- 5 core principles (intentional design, detail obsession, constraints breed creativity, user > aesthetics, consistency > creativity)
+- Designer persona (Rams + Ive + Vignelli + Sagmeister)
+- Bold aesthetic direction guidance (preserved from original skill)
+
+```markdown
 ---
 name: frontend-design
 description: Create distinctive, production-grade frontend interfaces as a world-class designer. Covers the full design stack — UX strategy, visual design, design systems, interaction design, and accessibility. Use this skill when building web components, pages, applications, dashboards, or any web UI. Generates creative, polished code that avoids generic AI aesthetics.
@@ -29,6 +60,27 @@ Before coding, commit to a BOLD aesthetic direction:
 - **Differentiation**: What makes this UNFORGETTABLE? What's the one thing someone will remember?
 
 **CRITICAL**: Choose a clear conceptual direction and execute it with precision. Bold maximalism and refined minimalism both work — the key is intentionality, not intensity.
+```
+
+- [ ] **Step 2: Verify the file has valid YAML frontmatter**
+
+Run: `head -5 skills/frontend-design/SKILL.md`
+Expected: Lines starting with `---`, containing `name:`, `description:`, then `---`
+
+---
+
+### Task 2: Add Section 2 (UX Strategy)
+
+**Files:**
+- Modify: `skills/frontend-design/SKILL.md`
+
+**Spec reference:** Spec section 2 (UX Strategy)
+
+- [ ] **Step 1: Append Section 2 to SKILL.md**
+
+Add UX Strategy section covering: user understanding questions, information architecture principles, wireframe-first process.
+
+```markdown
 
 ## 2. UX Strategy
 
@@ -55,6 +107,27 @@ For complex interfaces, structure before visuals:
 5. **Visual design** — How does it look?
 
 Skip wireframing only for simple, single-purpose components (a button, a badge, a card).
+```
+
+- [ ] **Step 2: Review the appended content**
+
+Run: `grep -n "^## " skills/frontend-design/SKILL.md`
+Expected: `## 1. Design Philosophy` and `## 2. UX Strategy` both present
+
+---
+
+### Task 3: Add Section 3 (Visual Design)
+
+**Files:**
+- Modify: `skills/frontend-design/SKILL.md`
+
+**Spec reference:** Spec section 3 (Visual Design) — absorbs and enhances original "Frontend Aesthetics Guidelines"
+
+- [ ] **Step 1: Append Section 3 to SKILL.md**
+
+This is the largest section. It absorbs the original skill's aesthetics guidance and adds systematic rules for color, typography, layout, motion, responsive design, and depth.
+
+```markdown
 
 ## 3. Visual Design
 
@@ -113,6 +186,25 @@ Principles:
 - **Atmospheric effects**: Gradient meshes, grain overlays, dramatic shadows, decorative borders, custom cursors.
 
 NEVER produce generic AI aesthetics: overused fonts (Inter, Roboto, Arial), cliched purple-on-white gradients, predictable layouts, cookie-cutter components. Every design must feel genuinely crafted for its context. Vary between light and dark themes, different fonts, different aesthetics across projects.
+```
+
+- [ ] **Step 2: Verify section count**
+
+Run: `grep -c "^## " skills/frontend-design/SKILL.md`
+Expected: `3`
+
+---
+
+### Task 4: Add Section 4 (Design System)
+
+**Files:**
+- Modify: `skills/frontend-design/SKILL.md`
+
+**Spec reference:** Spec section 4 (Design System)
+
+- [ ] **Step 1: Append Section 4 to SKILL.md**
+
+```markdown
 
 ## 4. Design System
 
@@ -144,6 +236,25 @@ Every component must have:
 - Support Light and Dark modes at minimum.
 - Detect system preference with `prefers-color-scheme`, allow manual override.
 - Brand colors stay consistent across modes; only backgrounds and surfaces switch.
+```
+
+- [ ] **Step 2: Verify section count**
+
+Run: `grep -c "^## " skills/frontend-design/SKILL.md`
+Expected: `4`
+
+---
+
+### Task 5: Add Section 5 (Interaction Design)
+
+**Files:**
+- Modify: `skills/frontend-design/SKILL.md`
+
+**Spec reference:** Spec section 5 (Interaction Design)
+
+- [ ] **Step 1: Append Section 5 to SKILL.md**
+
+```markdown
 
 ## 5. Interaction Design
 
@@ -173,6 +284,25 @@ Every interactive element must handle all 7 states:
 - **Labels**: Floating labels or fixed-top labels. NEVER use placeholder as the only label.
 - **Tab order**: DOM order = visual order. Logical flow left-to-right, top-to-bottom.
 - **Auto-focus**: First input field on page load and modal open.
+```
+
+- [ ] **Step 2: Verify section count**
+
+Run: `grep -c "^## " skills/frontend-design/SKILL.md`
+Expected: `5`
+
+---
+
+### Task 6: Add Section 6 (Accessibility)
+
+**Files:**
+- Modify: `skills/frontend-design/SKILL.md`
+
+**Spec reference:** Spec section 6 (Accessibility)
+
+- [ ] **Step 1: Append Section 6 to SKILL.md**
+
+```markdown
 
 ## 6. Accessibility (WCAG 2.1 AA)
 
@@ -202,6 +332,25 @@ Every interactive element must handle all 7 states:
 - **Focus trap**: Tab stays inside modal while open.
 - **Focus restore**: Return focus to trigger button when modal closes.
 - **Skip-to-content**: Let keyboard users bypass repeated navigation.
+```
+
+- [ ] **Step 2: Verify section count**
+
+Run: `grep -c "^## " skills/frontend-design/SKILL.md`
+Expected: `6`
+
+---
+
+### Task 7: Add Section 7 (Quality Gate) + Final Integration Note
+
+**Files:**
+- Modify: `skills/frontend-design/SKILL.md`
+
+**Spec reference:** Spec section 7 (Quality Gate) + ecosystem notes
+
+- [ ] **Step 1: Append Section 7 and closing notes to SKILL.md**
+
+```markdown
 
 ## 7. Quality Gate
 
@@ -238,3 +387,54 @@ Run this checklist before declaring any design work complete:
 ---
 
 **Remember:** Claude is capable of extraordinary creative work. Don't hold back — show what can truly be created when thinking outside the box and committing fully to a distinctive vision. Every interface should feel like it was crafted by the world's best designer, not generated by AI.
+```
+
+- [ ] **Step 2: Final verification — count all sections**
+
+Run: `grep -n "^## " skills/frontend-design/SKILL.md`
+Expected output (7 sections):
+```
+## 1. Design Philosophy
+## 2. UX Strategy
+## 3. Visual Design
+## 4. Design System
+## 5. Interaction Design
+## 6. Accessibility (WCAG 2.1 AA)
+## 7. Quality Gate
+```
+
+- [ ] **Step 3: Run tests**
+
+Run: `node tests/run-all.js`
+Expected: All tests pass
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add skills/frontend-design/SKILL.md
+git commit -m "feat: upgrade frontend-design skill to world-class full-stack designer
+
+- Add Design Philosophy (principles + persona)
+- Add UX Strategy (user research, IA, wireframe-first)
+- Enhance Visual Design (color system, type scale, 8px grid, motion, responsive, depth)
+- Add Design System (3-tier tokens, atomic components, theme strategy)
+- Add Interaction Design (7 states, feedback patterns, form design)
+- Add Accessibility (WCAG 2.1 AA, semantic HTML, ARIA, focus management)
+- Add Quality Gate (visual/UX/a11y/interaction/code checklist)"
+```
+
+---
+
+### Task 8: Commit spec and plan docs
+
+**Files:**
+- Add: `docs/superpowers/specs/2026-04-04-frontend-design-upgrade-design.md`
+- Add: `docs/superpowers/plans/2026-04-04-frontend-design-upgrade.md`
+
+- [ ] **Step 1: Stage and commit documentation**
+
+```bash
+git add docs/superpowers/specs/2026-04-04-frontend-design-upgrade-design.md
+git add docs/superpowers/plans/2026-04-04-frontend-design-upgrade.md
+git commit -m "docs: add spec and plan for frontend-design skill upgrade"
+```
