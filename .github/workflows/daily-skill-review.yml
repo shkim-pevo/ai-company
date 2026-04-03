@@ -11,62 +11,89 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - name: GitHub 스킬 검토 (상위 3개)
+      - name: 팀별 GitHub 스킬 검토
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           DATE=$(date +%Y-%m-%d)
           R="report.txt"
 
-          # 매일 다른 키워드를 순환하여 검색 (요일 기반)
-          DAY=$(date +%u)  # 1=월 ~ 7=일
+          echo ":mag: *팀별 추천 도구/스킬:*" > "$R"
 
-          case $DAY in
-            1) QUERIES=("claude code plugin" "AI coding agent" "agentic framework") ;;
-            2) QUERIES=("design system" "design tokens" "UI component library") ;;
-            3) QUERIES=("AI security" "vulnerability scanner" "MCP security") ;;
-            4) QUERIES=("data pipeline" "ML evaluation" "AI observability") ;;
-            5) QUERIES=("developer tools" "devops automation" "CI CD") ;;
-            6) QUERIES=("AI agent" "multi agent" "agent orchestration") ;;
-            7) QUERIES=("open source AI" "LLM tools" "AI productivity") ;;
-          esac
+          TOTAL=0
+          TEAM_COUNT=0
 
-          # 모든 키워드에서 결과 수집 → 스타 높은 순 정렬 → 상위 3개만
-          echo "[]" > all_results.json
+          search() {
+            local icon="$1" name="$2" shift; shift
+            shift; shift
+            local queries=("$@")
 
-          for q in "${QUERIES[@]}"; do
-            echo ">> 검색: $q"
-            raw=$(gh search repos "$q" --stars=">500" --sort=stars --limit=5 \
-              --json fullName,description,stargazersCount 2>/dev/null || echo "[]")
-            # 기존 결과에 병합
-            jq -s '.[0] + .[1]' all_results.json <(echo "$raw") > tmp.json && mv tmp.json all_results.json
-          done
+            # 여러 키워드로 검색 후 병합
+            echo "[]" > _team.json
+            for q in "${queries[@]}"; do
+              raw=$(gh search repos "$q" --stars=">5000" --sort=stars --limit=5 \
+                --json fullName,description,stargazersCount 2>/dev/null || echo "[]")
+              jq -s '.[0] + .[1]' _team.json <(echo "$raw") > _tmp.json && mv _tmp.json _team.json
+            done
 
-          # 중복 제거 + 스타순 정렬 + 상위 3개 추출
-          jq '[group_by(.fullName)[] | max_by(.stargazersCount)] | sort_by(-.stargazersCount) | limit(3;.[])' all_results.json > top3.json
+            # 중복 제거 + 스타순 정렬 + 상위 2개
+            jq '[group_by(.fullName)[] | max_by(.stargazersCount)] | sort_by(-.stargazersCount) | limit(2;.[])' _team.json > _top.json
+            local count
+            count=$(jq -s 'length' _top.json)
 
-          COUNT=$(jq -s 'length' top3.json)
-          echo "상위 $COUNT개 선정"
+            if [ "$count" -gt 0 ] 2>/dev/null; then
+              echo "" >> "$R"
+              echo "${icon} ${name}" >> "$R"
+              TEAM_COUNT=$((TEAM_COUNT + 1))
 
-          # 리포트 작성
-          echo ":mag: *GitHub 스킬 검토 리포트*  ($DATE)" > "$R"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >> "$R"
+              local idx=0
+              while [ $idx -lt "$count" ]; do
+                local repo stars desc short star_fmt
+                repo=$(jq -rs ".[$idx].fullName" _top.json)
+                stars=$(jq -rs ".[$idx].stargazersCount" _top.json)
+                desc=$(jq -rs ".[$idx].description // \"설명 없음\"" _top.json)
+                short="${repo##*/}"
+
+                if [ "$stars" -ge 1000 ]; then
+                  star_fmt="$(echo "scale=1; $stars / 1000" | bc)K"
+                else
+                  star_fmt="$stars"
+                fi
+
+                # 한국어 번역
+                case "$desc" in
+                  *"Claude Code plugin that automatically captures"*) desc="Claude Code 세션 컨텍스트 캡처 및 자동 주입 플러그인" ;;
+                  *"Claude Code plugin that shows"*) desc="Claude Code 컨텍스트/에이전트/Todo 실시간 모니터링 HUD" ;;
+                  *"Official"*"Anthropic"*) desc="Anthropic 공식 Claude Code 플러그인 디렉토리" ;;
+                  *"API documentation generator for JavaScript"*) desc="JavaScript API 문서 자동 생성" ;;
+                  *"RESTful web API Documentation"*) desc="REST API 문서 자동 생성" ;;
+                  *"Jest matcher for image"*) desc="Jest 이미지 비교 — 시각적 회귀 테스트 도구" ;;
+                  *"curated list"*"regression"*) desc="시각적 회귀 테스트 리소스 큐레이션" ;;
+                esac
+
+                echo "<${repo}|${short}> (${star_fmt} :star:) — ${desc}" >> "$R"
+                TOTAL=$((TOTAL + 1))
+                idx=$((idx + 1))
+              done
+            fi
+            rm -f _team.json _top.json _tmp.json
+          }
+
+          search ":computer:"            "개발팀"         "claude code plugin" "agentic development framework" "AI coding agent"
+          search ":art:"                 "디자인팀"       "design system" "design tokens" "UI component"
+          search ":shield:"              "보안팀"         "AI security" "vulnerability scanner" "security testing"
+          search ":chart_with_upwards_trend:" "마케팅팀"   "content marketing" "social media automation" "SEO tool"
+          search ":gear:"                "DevOps팀"       "CI CD pipeline" "docker kubernetes" "infrastructure automation"
+          search ":headphones:"          "고객지원팀"     "customer support" "helpdesk" "customer analytics"
+          search ":page_facing_up:"      "문서화팀"       "API documentation" "technical writing" "docs generator"
+          search ":bar_chart:"           "데이터팀"       "data pipeline" "ML evaluation" "AI observability"
+          search ":bulb:"                "기획팀"         "product roadmap" "project management" "agile tool"
+          search ":briefcase:"           "세일즈팀"       "CRM" "sales automation" "pitch deck"
+          search ":mag_right:"           "디자인리뷰팀"   "visual regression" "screenshot testing" "design QA"
+
           echo "" >> "$R"
-
-          jq -r '
-            .fullName as $repo |
-            (.fullName | split("/")[1]) as $short |
-            (if .stargazersCount >= 1000 then
-              ((.stargazersCount / 1000 * 10 | floor) / 10 | tostring) + "K"
-            else
-              (.stargazersCount | tostring)
-            end) as $stars |
-            (.description // "설명 없음") as $desc |
-            ":small_blue_diamond: <https://github.com/\($repo)|*\($short)*>  (\($stars) ★)\n    \($desc)\n"
-          ' top3.json >> "$R"
-
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >> "$R"
-          echo ":clock7: _매일 오전 7시 자동 발송  |  적용 필요 시 알려주세요!_" >> "$R"
+          echo "_총 ${TEAM_COUNT}개 팀에서 ${TOTAL}개 추천. 적용 필요 시 알려주세요!_" >> "$R"
+          echo "_이 리포트는 매일 오전 7시에 자동 발송됩니다._" >> "$R"
 
           cat "$R"
 
