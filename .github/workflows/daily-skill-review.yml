@@ -2,9 +2,8 @@ name: Daily Team Skill Review → Slack
 
 on:
   schedule:
-    # 매일 오전 7시 KST = UTC 22:00 (전날)
-    - cron: '0 22 * * *'
-  workflow_dispatch: # 수동 실행도 가능
+    - cron: '0 22 * * *'  # 매일 KST 07:00 = UTC 22:00
+  workflow_dispatch:
 
 jobs:
   skill-review:
@@ -13,95 +12,87 @@ jobs:
 
     steps:
       - name: Search GitHub for all 22 teams
-        id: search
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           DATE=$(date +%Y-%m-%d)
-          echo ":mag: *매일 GitHub 스킬 검토 리포트* — $DATE" > report.txt
-          echo "" >> report.txt
-          echo "*추천 도구/스킬 요약:*" >> report.txt
-          echo "" >> report.txt
+          REPORT="report.txt"
 
-          COUNT=0
-          TEAM_COUNT=0
+          cat > "$REPORT" << HEADER
+          :mag: *매일 GitHub 스킬 검토 리포트* — $DATE
 
-          search_team() {
+          *추천 도구/스킬 요약:*
+
+          HEADER
+
+          FOUND=0
+
+          do_search() {
             local team="$1"
             local query="$2"
-            local results
 
-            results=$(gh search repos "$query" --stars=">50" --sort=updated --limit=3 \
-              --json fullName,description,stargazersCount,updatedAt 2>/dev/null || echo "[]")
+            local raw
+            raw=$(gh search repos "$query" --stars=">50" --sort=stars --limit=3 \
+              --json fullName,description,stargazersCount 2>/dev/null || true)
 
-            if [ "$results" != "[]" ] && [ "$(echo "$results" | jq length)" -gt 0 ]; then
-              # Filter: updated within 6 months
-              local filtered
-              filtered=$(echo "$results" | jq --arg cutoff "2025-10-01" \
-                '[.[] | select(.updatedAt >= $cutoff)]')
-
-              if [ "$(echo "$filtered" | jq length)" -gt 0 ]; then
-                TEAM_COUNT=$((TEAM_COUNT + 1))
-                echo "$filtered" | jq -r --arg team "$team" --arg count "$TEAM_COUNT" \
-                  '.[:2][] | ":small_blue_diamond: *\($team)* — <https://github.com/\(.fullName)|\(.fullName)> (\(.stargazersCount) :star:)\n> \(.description // "설명 없음")\n"' >> report.txt
-                local added=$(echo "$filtered" | jq '[:2] | length')
-                COUNT=$((COUNT + added))
-              fi
+            if [ -z "$raw" ] || [ "$raw" = "[]" ]; then
+              return
             fi
+
+            local len
+            len=$(echo "$raw" | jq 'length')
+            if [ "$len" -eq 0 ] 2>/dev/null; then
+              return
+            fi
+
+            # Take top 2
+            echo "$raw" | jq -r --arg t "$team" \
+              '.[:2][] | ":small_blue_diamond: *" + $t + "* — <https://github.com/" + .fullName + "|" + .fullName + "> (" + (.stargazersCount|tostring) + " :star:)\n> " + (.description // "설명 없음") + "\n"' \
+              >> "$REPORT"
+
+            FOUND=$((FOUND + $(echo "$raw" | jq '[:2] | length')))
           }
 
-          # 22 teams - all keywords from the spec
-          search_team "01-조사팀" "market research tool OR competitive analysis AI"
-          search_team "02-토론팀" "AI debate framework OR decision analysis tool"
-          search_team "03-종합팀" "report generation AI OR investor deck generator"
-          search_team "04-퀄리티팀" "fact checking AI OR verification automation"
-          search_team "05-기획팀" "product roadmap tool OR PRD generator AI"
-          search_team "06-디자인팀" "design system DESIGN.md OR figma to code"
-          search_team "07-개발팀" "coding standards AI OR TDD framework OR fullstack template"
-          search_team "08-DevOps팀" "CI CD automation OR deployment automation SRE"
-          search_team "09-보안팀" "security scanner AI OR vulnerability detection OWASP"
-          search_team "10-마케팅팀" "content generation AI marketing OR growth hacking tool"
-          search_team "11-세일즈팀" "sales automation AI OR pitch deck AI"
-          search_team "12-고객지원팀" "customer journey tool OR support automation VOC"
-          search_team "13-데이터팀" "data pipeline AI OR BI dashboard ML evaluation"
-          search_team "14-법무팀" "legal document AI OR privacy compliance tool"
-          search_team "15-재무팀" "financial modeling SaaS metrics OR investor materials"
-          search_team "16-리더십팀" "executive dashboard OR strategic planning OKR"
-          search_team "17-문서화팀" "technical writing AI OR API documentation generator"
-          search_team "18-브랜드팀" "brand guidelines generator OR positioning framework"
-          search_team "19-전략팀" "business strategy tool OR TAM calculator market sizing"
-          search_team "20-추천엔진팀" "recommendation engine healthcare OR drug interaction API"
-          search_team "21-인사팀" "recruitment automation AI OR HR analytics"
-          search_team "22-디자인리뷰팀" "design QA automation OR visual regression testing"
+          do_search "01-조사팀"       "market research tool AI"
+          do_search "02-토론팀"       "AI debate framework decision analysis"
+          do_search "03-종합팀"       "report generation AI document automation"
+          do_search "04-퀄리티팀"     "fact checking AI verification automation"
+          do_search "05-기획팀"       "PRD generator AI product roadmap"
+          do_search "06-디자인팀"     "design system generator design tokens"
+          do_search "07-개발팀"       "claude code plugin agentic development"
+          do_search "08-DevOps팀"     "CI CD automation docker deployment"
+          do_search "09-보안팀"       "AI agent security scanner vulnerability"
+          do_search "10-마케팅팀"     "content generation AI SEO marketing"
+          do_search "11-세일즈팀"     "sales automation pitch deck AI"
+          do_search "12-고객지원팀"   "customer journey support automation"
+          do_search "13-데이터팀"     "data pipeline ML evaluation framework"
+          do_search "14-법무팀"       "legal document AI contract analysis"
+          do_search "15-재무팀"       "financial modeling SaaS metrics"
+          do_search "16-리더십팀"     "executive dashboard OKR strategic planning"
+          do_search "17-문서화팀"     "API documentation generator technical writing"
+          do_search "18-브랜드팀"     "brand guidelines generator positioning"
+          do_search "19-전략팀"       "business strategy TAM calculator market sizing"
+          do_search "20-추천엔진팀"   "recommendation engine healthcare AI"
+          do_search "21-인사팀"       "recruitment automation HR analytics"
+          do_search "22-디자인리뷰팀" "design QA visual regression testing"
 
-          echo "" >> report.txt
-          echo "_총 ${TEAM_COUNT}개 팀에서 ${COUNT}개 추천 발견. 적용 필요 시 알려주세요!_" >> report.txt
+          echo "_총 ${FOUND}개 추천 발견. 적용 필요 시 알려주세요!_" >> "$REPORT"
 
-          cat report.txt
-          echo "TEAM_COUNT=$TEAM_COUNT" >> "$GITHUB_OUTPUT"
-          echo "COUNT=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "=== REPORT ==="
+          cat "$REPORT"
+          echo "=== FOUND: $FOUND ==="
 
       - name: Post to Slack
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
           if [ -z "$SLACK_WEBHOOK_URL" ]; then
-            echo "⚠️ SLACK_WEBHOOK_URL not set — skipping Slack post"
-            echo "Report content:"
+            echo "SLACK_WEBHOOK_URL not set — skipping"
             cat report.txt
             exit 0
           fi
 
-          REPORT=$(cat report.txt | head -60)
-          PAYLOAD=$(jq -n --arg text "$REPORT" '{text: $text}')
-
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
-            -X POST -H 'Content-type: application/json' \
-            --data "$PAYLOAD" "$SLACK_WEBHOOK_URL")
-
-          if [ "$HTTP_CODE" = "200" ]; then
-            echo "✅ Slack post successful"
-          else
-            echo "❌ Slack post failed (HTTP $HTTP_CODE)"
-            exit 1
-          fi
+          TEXT=$(cat report.txt | head -60)
+          curl -s -X POST -H 'Content-type: application/json' \
+            --data "$(jq -n --arg t "$TEXT" '{text:$t}')" \
+            "$SLACK_WEBHOOK_URL"
