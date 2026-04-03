@@ -18,7 +18,8 @@ jobs:
           DATE=$(date +%Y-%m-%d)
           R="report.txt"
 
-          echo ":mag: *팀별 추천 도구/스킬:*" > "$R"
+          echo ":mag: *매일 GitHub 스킬 검토 리포트*  \`$DATE\`" > "$R"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >> "$R"
 
           FOUND=0
           TEAM_FOUND=0
@@ -33,6 +34,7 @@ jobs:
             len=$(echo "$raw" | jq 'length' 2>/dev/null || echo "0")
 
             if [ "$len" -gt 0 ] 2>/dev/null; then
+              echo "" >> "$R"
               echo "${icon} *${name}*" >> "$R"
               TEAM_FOUND=$((TEAM_FOUND + 1))
 
@@ -65,7 +67,7 @@ jobs:
                   *"No description"*|"") desc="설명 없음" ;;
                 esac
 
-                echo "<https://github.com/${repo}|${repo_short}> (${star_fmt} :star:) — ${desc}" >> "$R"
+                echo "    • <https://github.com/${repo}|*${repo_short}*> \`${star_fmt} ★\`  ${desc}" >> "$R"
                 FOUND=$((FOUND + 1))
                 idx=$((idx + 1))
               done
@@ -98,8 +100,9 @@ jobs:
           search ":mag_right:"           "디자인리뷰팀"   "visual regression testing"
 
           echo "" >> "$R"
-          echo "_총 ${TEAM_FOUND}개 팀에서 ${FOUND}개 추천. 적용 필요 시 알려주세요!_" >> "$R"
-          echo "_이 리포트는 매일 오전 7시에 자동 발송됩니다._" >> "$R"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >> "$R"
+          echo ":pushpin: *${TEAM_FOUND}개 팀* 에서 *${FOUND}개* 추천  |  적용 필요 시 알려주세요!" >> "$R"
+          echo ":clock7: _매일 오전 7시 자동 발송_" >> "$R"
 
           echo "=== 총 ${TEAM_FOUND}개 팀, ${FOUND}개 발견 ==="
           cat "$R"
