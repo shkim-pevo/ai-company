@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pevo AI Company 업무 설계</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, 'Pretendard', sans-serif; background: #0F1B2D; color: #fff; min-height: 100vh; padding: 32px; }
+
+  h1 { text-align: center; font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  h1 span { color: #FF6B35; }
+  .subtitle { text-align: center; color: #8899aa; font-size: 13px; margin-bottom: 32px; }
+
+  /* Tab navigation */
+  .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 28px; flex-wrap: wrap; }
+  .tab {
+    padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 500;
+    cursor: pointer; border: 1px solid #243B5E; background: transparent; color: #8899aa;
+    transition: all 0.2s;
+  }
+  .tab:hover { border-color: #FF6B35; color: #fff; }
+  .tab.active { background: #FF6B35; border-color: #FF6B35; color: #fff; }
+
+  /* Sections */
+  .section { display: none; max-width: 960px; margin: 0 auto; }
+  .section.active { display: block; }
+
+  /* Section title */
+  .sec-title { font-size: 20px; font-weight: 700; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #1A2D47; }
+  .sec-title span { color: #FF6B35; }
+
+  /* Flow diagram */
+  .flow { display: flex; align-items: center; justify-content: center; gap: 0; margin: 20px 0; flex-wrap: wrap; }
+  .flow-step {
+    background: #152236; border: 1px solid #243B5E; border-radius: 10px;
+    padding: 12px 16px; text-align: center; min-width: 110px;
+  }
+  .flow-step .fs-num { font-size: 10px; color: #FF6B35; font-weight: 700; }
+  .flow-step .fs-name { font-size: 13px; font-weight: 600; margin-top: 2px; }
+  .flow-step .fs-desc { font-size: 10px; color: #667788; margin-top: 3px; }
+  .flow-arrow { color: #334155; font-size: 18px; padding: 0 6px; }
+
+  /* Cards */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin: 16px 0; }
+  .card {
+    background: #152236; border-radius: 10px; padding: 16px;
+    border-left: 3px solid #243B5E;
+  }
+  .card .card-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  .card .card-body { font-size: 12px; color: #8899aa; line-height: 1.6; }
+  .card .card-body strong { color: #FF8C5A; }
+
+  /* Principle cards */
+  .card.principle { border-left-color: #FF6B35; }
+  .card.principle .card-icon { font-size: 20px; margin-bottom: 6px; }
+
+  /* Routing table */
+  .route-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px; }
+  .route-table th { background: #1A2D47; padding: 10px 12px; text-align: left; color: #8899aa; font-weight: 600; }
+  .route-table td { padding: 8px 12px; border-bottom: 1px solid #1A2D47; }
+  .route-table tr:hover td { background: rgba(255,107,53,0.05); }
+  .route-table .team-name { color: #FF8C5A; font-weight: 500; }
+
+  /* File tree */
+  .file-tree {
+    background: #0D1520; border-radius: 10px; padding: 16px 20px;
+    font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px;
+    line-height: 1.8; color: #667788; margin: 16px 0;
+  }
+  .file-tree .dir { color: #4A9EFF; }
+  .file-tree .file { color: #8899aa; }
+  .file-tree .highlight { color: #FF8C5A; }
+  .file-tree .comment { color: #445566; }
+
+  /* Checklist */
+  .checklist { list-style: none; margin: 12px 0; }
+  .checklist li { padding: 6px 0; font-size: 13px; color: #aabbcc; display: flex; align-items: flex-start; gap: 8px; }
+  .checklist li::before { content: '☐'; color: #FF6B35; font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+  .checklist li.done::before { content: '☑'; color: #059669; }
+
+  /* Lesson cards */
+  .lesson { background: #152236; border-radius: 8px; padding: 12px 16px; margin: 8px 0; border-left: 3px solid #E55A28; }
+  .lesson .lesson-id { font-size: 10px; color: #FF6B35; font-weight: 700; }
+  .lesson .lesson-title { font-size: 13px; font-weight: 600; margin-top: 2px; }
+  .lesson .lesson-rule { font-size: 11px; color: #8899aa; margin-top: 4px; }
+
+  /* Task status */
+  .task-section { margin: 16px 0; }
+  .task-header { font-size: 14px; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot-active { background: #FF6B35; }
+  .dot-waiting { background: #F59E0B; }
+  .dot-done { background: #059669; }
+
+  .task-item {
+    background: #152236; border-radius: 8px; padding: 10px 14px; margin: 6px 0;
+    font-size: 12px; color: #aabbcc; display: flex; align-items: center; gap: 8px;
+  }
+  .task-item .task-check { color: #059669; }
+  .task-item .task-pending { color: #445566; }
+
+  /* Footer */
+  .footer { text-align: center; color: #334155; font-size: 11px; margin-top: 32px; }
+
+  /* Stats bar */
+  .stats { display: flex; gap: 16px; justify-content: center; margin: 20px 0; flex-wrap: wrap; }
+  .stat-box { background: #152236; border-radius: 10px; padding: 14px 20px; text-align: center; min-width: 100px; }
+  .stat-box .stat-num { font-size: 24px; font-weight: 700; color: #FF6B35; }
+  .stat-box .stat-label { font-size: 11px; color: #667788; margin-top: 2px; }
+
+  /* Sub label */
+  .sub-label { font-size: 14px; font-weight: 600; margin: 20px 0 8px; color: #ccc; }
+  .sub-desc { font-size: 12px; color: #667788; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<h1><span>Pevo</span> AI Company</h1>
+<p class="subtitle">업무 설계 체계 · Workflow Design · 18개 팀 · 5단계 보고 체계</p>
+
+<!-- Stats -->
+<div class="stats">
+  <div class="stat-box"><div class="stat-num">18</div><div class="stat-label">전문 팀</div></div>
+  <div class="stat-box"><div class="stat-num">5</div><div class="stat-label">단계 워크플로우</div></div>
+  <div class="stat-box"><div class="stat-num">6</div><div class="stat-label">핵심 원칙</div></div>
+  <div class="stat-box"><div class="stat-num">13</div><div class="stat-label">축적 교훈</div></div>
+  <div class="stat-box"><div class="stat-num">10</div><div class="stat-label">완료 보고서</div></div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tab active" onclick="showTab('workflow')">업무 흐름</div>
+  <div class="tab" onclick="showTab('routing')">팀 라우팅</div>
+  <div class="tab" onclick="showTab('principles')">핵심 원칙</div>
+  <div class="tab" onclick="showTab('lessons')">교훈 (Lessons)</div>
+  <div class="tab" onclick="showTab('tasks')">작업 현황</div>
+  <div class="tab" onclick="showTab('files')">파일 구조</div>
+</div>
+
+<!-- Section 1: Workflow -->
+<div class="section active" id="workflow">
+  <div class="sec-title"><span>01</span> 업무 처리 워크플로우</div>
+
+  <div class="sub-label">5단계 보고 체계</div>
+  <div class="sub-desc">모든 업무는 이 5단계를 순서대로 거칩니다. CEO(김상현)의 요청 → 팀 시뮬레이션 → 최종 보고</div>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="fs-num">STEP 1</div>
+      <div class="fs-name">업무 접수</div>
+      <div class="fs-desc">팀장이 요청 분석<br>실무자 배정</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="fs-num">STEP 2</div>
+      <div class="fs-name">실무 작업</div>
+      <div class="fs-desc">각 실무자 전문<br>분야별 분석</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="fs-num">STEP 3</div>
+      <div class="fs-name">취합 보고</div>
+      <div class="fs-desc">팀장이 결과<br>종합 정리</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="fs-num">STEP 4</div>
+      <div class="fs-name">경영진 검토</div>
+      <div class="fs-desc">C-Level 전략적<br>피드백</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="fs-num">STEP 5</div>
+      <div class="fs-name">최종 보고</div>
+      <div class="fs-desc">피드백 반영<br>최종 결과물</div>
+    </div>
+  </div>
+
+  <div class="sub-label">작업 관리 프로세스</div>
+  <div class="flow">
+    <div class="flow-step"><div class="fs-name">계획</div><div class="fs-desc">todo.md 작성</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><div class="fs-name">검토</div><div class="fs-desc">구현 전 확인</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><div class="fs-name">실행</div><div class="fs-desc">진행 추적</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><div class="fs-name">검증</div><div class="fs-desc">QA 파이프라인</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><div class="fs-name">문서화</div><div class="fs-desc">결과 기록</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><div class="fs-name">교훈</div><div class="fs-desc">lessons.md</div></div>
+  </div>
+
+  <div class="sub-label">멀티팀 협업 모드</div>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-title">주관팀 (Primary)</div>
+      <div class="card-body">업무의 핵심을 담당하는 팀. 5단계 워크플로우의 메인 드라이버. 최종 보고서 작성 책임.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">협력팀 (Supporting)</div>
+      <div class="card-body">전문 관점을 보충하는 팀. STEP 2에서 핵심 의견 제공. 주관팀과 독립적으로 분석.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Claude + Gemini 병행</div>
+      <div class="card-body"><strong>Claude</strong>: 전략적 사고, 창의적 아이디어, 스토리텔링<br><strong>Gemini</strong>: 데이터 분석, 팩트체크, 논리 검증<br>교차 검증으로 품질 극대화</div>
+    </div>
+  </div>
+
+  <div class="sub-label">완료 기준 (체크리스트)</div>
+  <ul class="checklist">
+    <li>생성물이 의도한 대로 작동하는가 (테스트/실행 확인)</li>
+    <li>로그에 에러 없는가</li>
+    <li>Content QA 통과 (텍스트 정확성)</li>
+    <li>Visual QA 통과 (레이아웃·대비·정렬)</li>
+    <li>"시니어 엔지니어가 이걸 승인할까?" — Yes인가</li>
+  </ul>
+</div>
+
+<!-- Section 2: Routing -->
+<div class="section" id="routing">
+  <div class="sec-title"><span>02</span> 팀 라우팅 가이드</div>
+  <div class="sub-desc">업무의 성격에 따라 자동으로 적절한 팀에 라우팅됩니다.</div>
+
+  <table class="route-table">
+    <tr><th>업무 유형</th><th>라우팅 팀</th><th>#</th></tr>
+    <tr><td>시장/경쟁사/기술 조사</td><td class="team-name">조사팀</td><td>01</td></tr>
+    <tr><td>찬반 토론, 다각도 검토</td><td class="team-name">토론팀</td><td>02</td></tr>
+    <tr><td>전략 종합, 의사결정</td><td class="team-name">종합팀</td><td>03</td></tr>
+    <tr><td>팩트체크, 검증</td><td class="team-name">퀄리티팀</td><td>04</td></tr>
+    <tr><td>프로덕트 기획, PRD</td><td class="team-name">기획팀</td><td>05</td></tr>
+    <tr><td>UI/UX</td><td class="team-name">디자인팀</td><td>06</td></tr>
+    <tr><td>코딩, 아키텍처</td><td class="team-name">개발팀</td><td>07</td></tr>
+    <tr><td>인프라, 배포</td><td class="team-name">DevOps팀</td><td>08</td></tr>
+    <tr><td>보안, 컴플라이언스</td><td class="team-name">보안팀</td><td>09</td></tr>
+    <tr><td>마케팅 전략, 콘텐츠</td><td class="team-name">마케팅팀</td><td>10</td></tr>
+    <tr><td>영업, 파트너십</td><td class="team-name">세일즈팀</td><td>11</td></tr>
+    <tr><td>고객 관리, CS</td><td class="team-name">고객지원팀</td><td>12</td></tr>
+    <tr><td>데이터 분석, BI</td><td class="team-name">데이터분석팀</td><td>13</td></tr>
+    <tr><td>법률, 규제</td><td class="team-name">법무팀</td><td>14</td></tr>
+    <tr><td>재무, 투자</td><td class="team-name">재무팀</td><td>15</td></tr>
+    <tr><td>경영 전략, C-Level</td><td class="team-name">리더십팀</td><td>16</td></tr>
+    <tr><td>문서 작성, 가이드</td><td class="team-name">문서화팀</td><td>17</td></tr>
+    <tr style="background:rgba(255,107,53,0.05)"><td><strong>브랜드 전략, 네이밍, 톤앤매너, BI</strong></td><td class="team-name"><strong>Brand Council</strong></td><td><strong>18</strong></td></tr>
+  </table>
+
+  <div class="sub-label">복합 업무 예시</div>
+  <div class="flow">
+    <div class="flow-step"><div class="fs-name">조사팀</div><div class="fs-desc">시장 조사</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><div class="fs-name">토론팀</div><div class="fs-desc">다각도 검토</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><div class="fs-name">종합팀</div><div class="fs-desc">전략 수립</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><div class="fs-name">기획팀</div><div class="fs-desc">실행 계획</div></div>
+  </div>
+</div>
+
+<!-- Section 3: Principles -->
+<div class="section" id="principles">
+  <div class="sec-title"><span>03</span> 핵심 원칙</div>
+
+  <div class="card-grid">
+    <div class="card principle">
+      <div class="card-icon">📋</div>
+      <div class="card-title">1. 기본은 계획 모드</div>
+      <div class="card-body">사소하지 않은 모든 작업은 계획 모드로 시작. 3단계 이상이면 체크리스트 작성. 뭔가 잘못되면 즉시 멈추고 다시 계획.</div>
+    </div>
+    <div class="card principle">
+      <div class="card-icon">🤖</div>
+      <div class="card-title">2. 서브에이전트 활용</div>
+      <div class="card-body">메인 컨텍스트를 깔끔하게 유지. 조사·탐색·병렬 분석은 서브에이전트에 위임. <strong>하나당 하나의 작업만</strong> — 집중 실행.</div>
+    </div>
+    <div class="card principle">
+      <div class="card-icon">🔄</div>
+      <div class="card-title">3. 자기개선 루프</div>
+      <div class="card-body">수정을 받을 때마다 <strong>lessons.md</strong>에 기록. 같은 실수를 반복하지 않는다. 세션 시작 시 교훈 목록을 먼저 검토.</div>
+    </div>
+    <div class="card principle">
+      <div class="card-icon">✅</div>
+      <div class="card-title">4. 완료 전 반드시 검증</div>
+      <div class="card-body">작동한다는 걸 증명하기 전까지 완료로 표시하지 말 것. <strong>"시니어 엔지니어가 이걸 승인할까?"</strong> 자문.</div>
+    </div>
+    <div class="card principle">
+      <div class="card-icon">💎</div>
+      <div class="card-title">5. 우아함 추구 (균형)</div>
+      <div class="card-body">"더 우아한 방법이 있지 않을까?" 자문. 단순하고 명백한 수정엔 생략 — 오버엔지니어링 금지.</div>
+    </div>
+    <div class="card principle">
+      <div class="card-icon">🔧</div>
+      <div class="card-title">6. 자율적 버그 수정</div>
+      <div class="card-body">버그 리포트를 받으면 그냥 고칠 것. 하나하나 물어보지 말 것. 로그·에러·실패한 테스트를 직접 찾아서 해결.</div>
+    </div>
+  </div>
+
+  <div class="sub-label">실행 규칙</div>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-title">단순함 우선</div>
+      <div class="card-body">모든 변경은 최대한 단순하게. 건드리는 코드는 최소화.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">게으름 금지</div>
+      <div class="card-body">근본 원인을 찾을 것. 임시방편 없음. 시니어 개발자 기준.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">최소 영향</div>
+      <div class="card-body">꼭 필요한 부분만 수정. 새로운 버그를 만들지 말 것.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Section 4: Lessons -->
+<div class="section" id="lessons">
+  <div class="sec-title"><span>04</span> 축적된 교훈 (Lessons Learned)</div>
+  <div class="sub-desc">실수에서 배운 규칙들. 세션 시작 시 반드시 검토합니다. 현재 13개 교훈 축적.</div>
+
+  <div class="sub-label">PptxGenJS 관련 (5건)</div>
+  <div class="lesson">
+    <div class="lesson-id">L-001</div>
+    <div class="lesson-title">mkShadow는 반드시 팩토리 함수로</div>
+    <div class="lesson-rule">PptxGenJS가 shadow 객체를 mutate → 매번 새 객체 반환하는 팩토리 사용</div>
+  </div>
+  <div class="lesson">
+    <div class="lesson-id">L-002</div>
+    <div class="lesson-title">IMG 헬퍼에서 prefix 중복 주의</div>
+    <div class="lesson-rule">genIcon()은 base64만 반환, IMG() 헬퍼가 prefix 추가</div>
+  </div>
+  <div class="lesson">
+    <div class="lesson-id">L-003</div>
+    <div class="lesson-title">팀 프로필 이미지 경로 검증</div>
+    <div class="lesson-rule">Glob으로 실제 파일 목록을 먼저 확인한 후 경로 지정</div>
+  </div>
+  <div class="lesson">
+    <div class="lesson-id">L-004</div>
+    <div class="lesson-title">슬라이드 요소 대비(Contrast) 검증 필수</div>
+    <div class="lesson-rule">밝은 배경에는 bodyText(2D3748) 또는 subText(64748B). midGray는 dark 전용.</div>
+  </div>
+  <div class="lesson">
+    <div class="lesson-id">L-005</div>
+    <div class="lesson-title">color 이름과 실제 명도 혼동 주의</div>
+    <div class="lesson-rule">hex 값의 실제 명도를 확인. 이름에 속지 말 것.</div>
+  </div>
+
+  <div class="sub-label">인프라/환경 관련 (4건)</div>
+  <div class="lesson">
+    <div class="lesson-id">L-006</div>
+    <div class="lesson-title">WebFetch는 egress proxy에 의해 차단 가능</div>
+    <div class="lesson-rule">WebSearch 우선 사용. WebFetch 실패 시 대안 전환.</div>
+  </div>
+  <div class="lesson">
+    <div class="lesson-id">L-007</div>
+    <div class="lesson-title">LibreOffice PDF 변환 시 한국어 폰트 미지원</div>
+    <div class="lesson-rule">VM 환경 제한. QA 시 한글 렌더링 이슈 무시. Content QA로 별도 검증.</div>
+  </div>
+  <div class="lesson">
+    <div class="lesson-id">L-008</div>
+    <div class="lesson-title">soffice PDF 출력 경로 주의</div>
+    <div class="lesson-rule">변환 후 ls로 실제 출력 위치 확인 후 후속 작업.</div>
+  </div>
+  <div class="lesson">
+    <div class="lesson-id">L-009</div>
+    <div class="lesson-title">병렬 도구 호출 시 첫 번째 호출 실패 가능</div>
+    <div class="lesson-rule">WebSearch는 단독 호출하거나 실패 시 재시도.</div>
+  </div>
+
+  <div class="sub-label">작업 흐름 관련 (2건)</div>
+  <div class="lesson">
+    <div class="lesson-id">L-010</div>
+    <div class="lesson-title">컨텍스트 소진 관리</div>
+    <div class="lesson-rule">서브에이전트 적극 활용. 중간 결과물은 파일로 저장.</div>
+  </div>
+  <div class="lesson">
+    <div class="lesson-id">L-011</div>
+    <div class="lesson-title">QA는 생성 직후 반드시 수행</div>
+    <div class="lesson-rule">PPTX → PDF → 이미지 → Visual QA + Content QA 파이프라인 항상 실행.</div>
+  </div>
+
+  <div class="sub-label">콘텐츠 관련 (2건)</div>
+  <div class="lesson">
+    <div class="lesson-id">L-012</div>
+    <div class="lesson-title">재무 데이터 정확성 — ARR ≠ 매출</div>
+    <div class="lesson-rule">ARR은 구독 기반 반복 매출만. 일회성 매출은 별도 표기.</div>
+  </div>
+  <div class="lesson">
+    <div class="lesson-id">L-013</div>
+    <div class="lesson-title">안전 표현 — "100% 보장" 금지</div>
+    <div class="lesson-rule">AI 정확도는 "95%+ 목표" 등 목표치로. "보장" 표현 절대 금지.</div>
+  </div>
+</div>
+
+<!-- Section 5: Tasks -->
+<div class="section" id="tasks">
+  <div class="sec-title"><span>05</span> 작업 현황</div>
+
+  <div class="task-section">
+    <div class="task-header"><div class="status-dot dot-waiting"></div> 대기 중 (IR Deck 후속)</div>
+    <div class="task-item"><span class="task-pending">☐</span> CEO/CTO 실제 프로필 사진 삽입 (사진 에셋 대기)</div>
+    <div class="task-item"><span class="task-pending">☐</span> 실제 제품 스크린샷 반영 (5~6월 실증 후)</div>
+    <div class="task-item"><span class="task-pending">☐</span> CEO/CTO 이전 회사 매출 데이터 반영</div>
+  </div>
+
+  <div class="task-section">
+    <div class="task-header"><div class="status-dot dot-done"></div> 완료 — IR Deck V8 YC Format (02.27)</div>
+    <div class="task-item"><span class="task-check">☑</span> YC 피치덱 가이드라인 조사 (조사팀+종합팀+재무팀)</div>
+    <div class="task-item"><span class="task-check">☑</span> V7→YC 갭 분석 및 아웃라인 작성</div>
+    <div class="task-item"><span class="task-check">☑</span> V8 YC Format PPTX 생성 (11장 + 4 Appendix)</div>
+    <div class="task-item"><span class="task-check">☑</span> Visual QA + Content QA → 대비 이슈 3건 수정</div>
+  </div>
+
+  <div class="task-section">
+    <div class="task-header"><div class="status-dot dot-done"></div> 완료 — IR Deck V7 (02.27)</div>
+    <div class="task-item"><span class="task-check">☑</span> V6.5 → V7 멀티팀 검토 (토론·퀄리티·종합)</div>
+    <div class="task-item"><span class="task-check">☑</span> V7 PPTX 생성 (15장)</div>
+  </div>
+
+  <div class="task-section">
+    <div class="task-header"><div class="status-dot dot-done"></div> 완료 — 17개 팀 통합 보고서 (02.21)</div>
+    <div class="task-item"><span class="task-check">☑</span> 10개 보고서 작성 (조사4, 재무2, 법무1, 마케팅1, 토론1, 개발1, 종합1)</div>
+    <div class="task-item"><span class="task-check">☑</span> 종합 준비도 95% 달성</div>
+  </div>
+
+  <div class="task-section">
+    <div class="task-header"><div class="status-dot dot-done"></div> 완료 — 브랜딩 Phase 1 (02.28)</div>
+    <div class="task-item"><span class="task-check">☑</span> 벤치마크 조사 (17+ 헬스케어 AI 기업)</div>
+    <div class="task-item"><span class="task-check">☑</span> 상표/도메인 검증</div>
+    <div class="task-item"><span class="task-check">☑</span> 5개 후보 TF 심층 분석 → Persistent Voice 선정</div>
+    <div class="task-item"><span class="task-check">☑</span> Brand Council 조직 설계 및 반영</div>
+  </div>
+</div>
+
+<!-- Section 6: Files -->
+<div class="section" id="files">
+  <div class="sec-title"><span>06</span> 파일 구조</div>
+
+  <div class="sub-label">작업 관리</div>
+  <div class="file-tree">
+    <span class="dir">tasks/</span><br>
+    ├── <span class="highlight">WORKFLOW.md</span> <span class="comment">← 워크플로우 규칙 (이 문서의 원본)</span><br>
+    ├── <span class="highlight">todo.md</span> <span class="comment">← 작업 계획 + 진행 추적</span><br>
+    └── <span class="highlight">lessons.md</span> <span class="comment">← 교훈 기록 (13건 축적)</span>
+  </div>
+
+  <div class="sub-label">팀 프로필</div>
+  <div class="file-tree">
+    <span class="dir">teams/</span><br>
+    ├── <span class="dir">01-research/</span> ~ <span class="dir">17-documentation/</span> <span class="comment">← 기존 17개 팀</span><br>
+    └── <span class="dir highlight">18-brand-council/</span> <span class="comment">← 신설 (CEO 직속 가상 조직)</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;├── 팀장.md <span class="comment">(CEO 겸임)</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;├── Brand-Lead.md <span class="comment">(실무총괄, ← 마케팅팀)</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;├── 브랜드-디자이너.md <span class="comment">(← 디자인팀)</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;├── 콘텐츠-마케터.md <span class="comment">(← 마케팅팀)</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;└── UX-디자이너.md <span class="comment">(← 디자인팀)</span>
+  </div>
+
+  <div class="sub-label">팀 작업물 (보고서)</div>
+  <div class="file-tree">
+    <span class="dir">IR Deck/team_assignments/</span><br>
+    ├── <span class="highlight">00_MASTER_ASSIGNMENT.md</span> <span class="comment">← 전체 프로젝트 지시서</span><br>
+    ├── <span class="highlight">00_FINAL_SUMMARY.md</span> <span class="comment">← 완료 작업 요약</span><br>
+    ├── <span class="dir">research/</span> <span class="comment">(4건: 시장, 경쟁사, 트렌드, 크레소티)</span><br>
+    ├── <span class="dir">finance/</span> <span class="comment">(2건: Unit Economics, 밸류에이션)</span><br>
+    ├── <span class="dir">legal/</span> <span class="comment">(1건: 규제 컴플라이언스)</span><br>
+    ├── <span class="dir">marketing/</span> <span class="comment">(1건: 투자자 커뮤니케이션)</span><br>
+    ├── <span class="dir">debate/</span> <span class="comment">(2건: Q&A 검증, 브랜드팀 독립 검토)</span><br>
+    ├── <span class="dir">development/</span> <span class="comment">(1건: 기술 아키텍처)</span><br>
+    └── <span class="dir">synthesis/</span> <span class="comment">(1건: 최종 권고)</span>
+  </div>
+
+  <div class="sub-label">브랜딩</div>
+  <div class="file-tree">
+    <span class="dir">branding/</span><br>
+    ├── <span class="highlight">Pevo_Brand_Phase1_Report.md</span> <span class="comment">← Brand TF 종합 보고서</span><br>
+    ├── <span class="file">Pevo_OrgChart.html</span> <span class="comment">← 조직 구성도</span><br>
+    └── <span class="file">Pevo_Workflow_Design.html</span> <span class="comment">← 업무 설계 (이 파일)</span>
+  </div>
+
+  <div class="sub-label">IR Deck</div>
+  <div class="file-tree">
+    <span class="dir">IR Deck/</span><br>
+    ├── <span class="highlight">Pevo_IR_Pitchdeck_V10_Premium.pptx</span> <span class="comment">← 최신 (V10)</span><br>
+    ├── <span class="file">Pevo_IR_Pitchdeck_V9_YC.md</span> <span class="comment">← 콘텐츠 원본</span><br>
+    └── <span class="file">PharmPay_Executive_Summary.md</span> <span class="comment">← 투자 요약서</span>
+  </div>
+</div>
+
+<div class="footer">Pevo (Persistent Voice) · 헬스케어 보이스 AI 플랫폼 · 2026.02.28 기준</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

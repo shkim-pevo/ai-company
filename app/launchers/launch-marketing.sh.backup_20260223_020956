@@ -1,0 +1,128 @@
+#!/bin/bash
+clear
+# 📢 마케팅팀 - AI Company Team Chat
+
+TEAM_DIR="/Users/sanghyunkim/Desktop/ai-company/teams/10-marketing"
+GEMINI_BIN="/Users/sanghyunkim/Desktop/ai-company/node_modules/.bin/gemini"
+WORKFLOW_FILE="/Users/sanghyunkim/Desktop/ai-company/app/workflow.md"
+AI_COMPANY_DIR="/Users/sanghyunkim/ai-company"
+TEAM_ID="marketing"
+
+
+# Build system prompt with hierarchy workflow
+build_prompt() {
+  local prompt="당신은 AI 회사의 📢 마케팅팀입니다.
+당신은 **마케팅팀장** 역할을 중심으로 팀을 운영합니다.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## 업무 처리 프로세스 (반드시 이 순서로 응답)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+### STEP 1: [마케팅팀장] 업무 접수
+- 김상현 대표님의 요청을 분석하고, 관련 실무자를 배정합니다.
+- 형식: \"📋 마케팅팀장: 업무를 접수했습니다. [실무자 이름]에게 배분합니다.\"
+
+### STEP 2: [실무자들] 실무 작업
+- 배정된 각 실무자가 자신의 전문 분야에서 의견/분석을 제시합니다.
+- 형식: \"[실무자 이름]: (전문적 의견)\"
+
+### STEP 3: [마케팅팀장] 취합 보고
+- 팀장이 실무자들의 결과를 종합합니다.
+- 형식: \"📊 마케팅팀장 취합: (종합 정리)\"
+
+### STEP 4: [리더십] 경영진 검토
+- 리더십팀(CEO, CTO, COO, CMO, CPO 중 관련자)이 전략적 관점에서 코멘트합니다.
+- 형식: \"👔 [리더십 직함]: (전략적 피드백)\"
+
+### STEP 5: [마케팅팀장] 최종 보고
+- 팀장이 리더십 피드백을 반영한 최종 결과를 김상현 대표님에게 보고합니다.
+- 형식:
+  ┌─────────────────────────────┐
+  │  📋 마케팅팀 최종 보고서       │
+  ├─────────────────────────────┤
+  │  1. 핵심 요약                │
+  │  2. 실무진 분석 결과           │
+  │  3. 리더십 피드백              │
+  │  4. 권고 사항 / 액션 아이템     │
+  └─────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## 응답 규칙
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. 반드시 위 5단계를 순서대로 시뮬레이션하세요.
+2. 각 실무자는 자신의 전문 분야에 맞게 발언하세요.
+3. 팀장은 중립적으로 취합하고, 리더십은 전략적 관점에서 코멘트하세요.
+4. 한국어로 답변하세요.
+5. 간단한 질문이라도 최소 STEP 1, 2, 5는 포함하세요.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## 팀 구성원 프로필
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+  for md_file in "$TEAM_DIR"/*.md; do
+    if [ -f "$md_file" ]; then
+      prompt="${prompt}
+---
+$(cat "$md_file")"
+    fi
+  done
+  echo "$prompt"
+}
+
+# Header display
+echo ""
+echo -e "\033[1;36m╔══════════════════════════════════════════╗\033[0m"
+echo -e "\033[1;37m║  📢  마케팅팀 - AI Company Team Chat     ║\033[0m"
+echo -e "\033[1;36m╠══════════════════════════════════════════╣\033[0m"
+echo -e "\033[1;33m║  👤 팀장: 마케팅팀장                       ║\033[0m"
+echo -e "\033[1;36m╠══════════════════════════════════════════╣\033[0m"
+echo -e "\033[0;37m║  실무자:                                 ║\033[0m"
+for md in "$TEAM_DIR"/*.md; do
+  name=$(basename "$md" .md | tr '-' ' ')
+  if [[ "$name" != *"팀장"* ]]; then
+    echo -e "\033[0;33m║    • $name\033[0m"
+  fi
+done
+echo -e "\033[1;36m╠══════════════════════════════════════════╣\033[0m"
+echo -e "\033[0;90m║  보고체계: 실무자 → 팀장 → 리더십 → 김상현 대표님 ║\033[0m"
+echo -e "\033[1;36m╠══════════════════════════════════════════╣\033[0m"
+echo -e "\033[1;37m║  AI 엔진 선택:                           ║\033[0m"
+echo -e "\033[1;32m║    [1] 🟣 Claude                         ║\033[0m"
+echo -e "\033[1;34m║    [2] 🔵 Gemini                         ║\033[0m"
+echo -e "\033[1;35m║    [3] 🤖 병렬 실행 (Claude + Gemini)    ║\033[0m"
+echo -e "\033[0;90m║    [4] 종료                              ║\033[0m"
+echo -e "\033[1;36m╚══════════════════════════════════════════╝\033[0m"
+echo ""
+read -p "  선택 (1/2/3/4): " choice
+echo ""
+
+SYSTEM_PROMPT=$(build_prompt)
+
+case $choice in
+  1)
+    echo -e "\033[1;32m🟣 Claude + 📢 마케팅팀 시작...\033[0m"
+    echo ""
+    exec claude --system-prompt "$SYSTEM_PROMPT" --model sonnet
+    ;;
+  2)
+    echo -e "\033[1;34m🔵 Gemini + 📢 마케팅팀 시작...\033[0m"
+    echo ""
+    exec "$GEMINI_BIN" -i "$SYSTEM_PROMPT"
+    ;;
+  3)
+    echo -e "\033[1;35m🤖 병렬 실행 모드\033[0m"
+    echo ""
+    read -p "작업 내용을 입력하세요: " task
+    echo ""
+    if [ -z "$task" ]; then
+      echo "작업 내용이 비어있습니다."
+      exit 1
+    fi
+    exec "$AI_COMPANY_DIR/scripts/parallel-ai.sh" --task "$task" --team "$TEAM_ID" --compare
+
+    ;;
+  4|*)
+    echo -e "\033[0;90m종료합니다.\033[0m"
+    exit 0
+    ;;
+esac

@@ -17,3 +17,39 @@ pharmpay-ui/node_modules/
 ad-dashboard/node_modules/
 pharmpay-recommendation/node_modules/
 /tmp/
+
+# === 별도 리포로 관리할 대형 프로젝트 ===
+howlpot-ui/
+howlpot-ui 2/
+pevo-ui/
+pharmpay-ui/
+pharmpay-recommendation/
+ad-dashboard/
+ad-dashboard-v2/
+mungpay/
+paperclip/
+
+# === ZIP 백업 파일 ===
+*.zip
+
+# === 내부/민감 문서 ===
+IR Deck/
+samsung/
+채용/
+정부사업계획서/
+자금조달계획서_주식회사페보.docx
+이메일_본문_연장신청.md
+PEVO_AI_Agent_팀구성도.html
+PEVO_Product_Designer_JD.*
+Pevo_Developer_JD.docx
+옵티마/
+
+# === 단일 JSX 파일 (별도 프로젝트) ===
+howlpot-admin-dashboard.jsx
+howlpot-sitter-dashboard-v2.jsx
+
+# === IDE/도구 로컬 설정 ===
+.claude/
+.cursor/
+.codex/
+.opencode/

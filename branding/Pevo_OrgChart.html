@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pevo AI Company 조직 구성도</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, 'Pretendard', sans-serif; background: #0F1B2D; color: #fff; min-height: 100vh; padding: 32px; }
+
+  h1 { text-align: center; font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+  h1 span { color: #FF6B35; }
+  .subtitle { text-align: center; color: #8899aa; font-size: 14px; margin-bottom: 36px; }
+
+  /* CEO Box */
+  .ceo-row { display: flex; justify-content: center; margin-bottom: 12px; }
+  .ceo-box {
+    background: linear-gradient(135deg, #FF6B35, #E55A28);
+    border-radius: 12px; padding: 16px 32px; text-align: center;
+    box-shadow: 0 4px 20px rgba(255,107,53,0.3);
+  }
+  .ceo-box .title { font-size: 11px; opacity: 0.85; letter-spacing: 1px; text-transform: uppercase; }
+  .ceo-box .name { font-size: 20px; font-weight: 700; margin-top: 2px; }
+  .ceo-box .role { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+
+  /* Connector lines */
+  .connector { display: flex; justify-content: center; margin-bottom: 12px; }
+  .vline { width: 2px; height: 24px; background: #334155; }
+
+  /* C-Level row */
+  .clevel-row { display: flex; justify-content: center; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+  .clevel-box {
+    background: #1A2D47; border-radius: 10px; padding: 12px 20px; text-align: center;
+    border: 1px solid #243B5E; min-width: 120px;
+  }
+  .clevel-box .cl-title { font-size: 10px; color: #667788; letter-spacing: 1px; text-transform: uppercase; }
+  .clevel-box .cl-name { font-size: 15px; font-weight: 600; margin-top: 2px; }
+  .clevel-box .cl-note { font-size: 10px; color: #FF8C5A; margin-top: 2px; }
+
+  /* Team grid */
+  .teams-label { text-align: center; color: #556677; font-size: 12px; margin: 20px 0 12px; letter-spacing: 2px; text-transform: uppercase; }
+  .team-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px; max-width: 1100px; margin: 0 auto;
+  }
+  .team-card {
+    background: #152236; border-radius: 10px; padding: 14px 16px;
+    border-left: 3px solid #243B5E; transition: all 0.2s;
+    cursor: default;
+  }
+  .team-card:hover { border-left-color: #FF6B35; background: #1A2D47; }
+  .team-card .tc-num { font-size: 10px; color: #445566; font-weight: 700; }
+  .team-card .tc-name { font-size: 14px; font-weight: 600; margin-top: 2px; }
+  .team-card .tc-members { font-size: 11px; color: #667788; margin-top: 6px; line-height: 1.5; }
+  .team-card .tc-members .highlight { color: #FF8C5A; font-weight: 500; }
+
+  /* Brand Council card - special styling within the grid */
+  .team-card.brand-council {
+    border-left: 3px solid #FF6B35;
+    background: linear-gradient(135deg, #1E2D44, #152236);
+    position: relative;
+  }
+  .team-card.brand-council::after {
+    content: ''; position: absolute; top: 0; right: 0;
+    width: 0; height: 0;
+    border-top: 24px solid #FF6B35; border-left: 24px solid transparent;
+    border-radius: 0 10px 0 0;
+  }
+  .team-card.brand-council .tc-badge {
+    display: inline-block; background: rgba(255,107,53,0.15); color: #FF8C5A;
+    font-size: 9px; padding: 2px 6px; border-radius: 4px; margin-top: 4px;
+    letter-spacing: 0.5px;
+  }
+  .team-card.brand-council .tc-council-members {
+    display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px;
+  }
+  .team-card.brand-council .tc-cm {
+    background: rgba(255,107,53,0.08); border: 1px solid rgba(255,107,53,0.2);
+    border-radius: 4px; padding: 3px 7px; font-size: 10px; color: #aabbcc;
+  }
+  .team-card.brand-council .tc-cm .from { color: #556677; font-size: 9px; }
+
+  /* Category labels */
+  .cat-label {
+    grid-column: 1 / -1; font-size: 11px; color: #445566;
+    letter-spacing: 1.5px; text-transform: uppercase; padding: 8px 0 0;
+    border-top: 1px solid #1A2D47; margin-top: 4px;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex; gap: 20px; justify-content: center; margin-top: 28px; flex-wrap: wrap;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #667788; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-council { background: #FF6B35; }
+  .dot-clevel { background: #1A2D47; border: 1px solid #243B5E; }
+  .dot-team { background: #243B5E; }
+  .dot-dual { background: linear-gradient(135deg, #FF6B35 50%, #243B5E 50%); }
+
+  .footer { text-align: center; color: #334155; font-size: 11px; margin-top: 32px; }
+
+  /* Roadmap */
+  .roadmap {
+    max-width: 720px; margin: 28px auto 0;
+    display: flex; gap: 0; align-items: stretch;
+  }
+  .rm-phase {
+    flex: 1; padding: 12px 16px; text-align: center;
+    border-top: 3px solid #243B5E;
+  }
+  .rm-phase.active { border-top-color: #FF6B35; background: rgba(255,107,53,0.05); border-radius: 8px; }
+  .rm-phase .rm-label { font-size: 10px; color: #556677; letter-spacing: 1px; text-transform: uppercase; }
+  .rm-phase .rm-title { font-size: 13px; font-weight: 600; margin-top: 4px; }
+  .rm-phase .rm-when { font-size: 11px; color: #667788; margin-top: 2px; }
+  .rm-arrow { display: flex; align-items: center; color: #334155; font-size: 18px; padding: 0 4px; }
+</style>
+</head>
+<body>
+
+<h1><span>Pevo</span> AI Company</h1>
+<p class="subtitle">Persistent Voice — 헬스케어 보이스 AI 플랫폼 · 18개 팀 조직 구성도</p>
+
+<!-- CEO -->
+<div class="ceo-row">
+  <div class="ceo-box">
+    <div class="title">Chief Executive Officer</div>
+    <div class="name">김상현 CEO</div>
+    <div class="role">비전·전략 수립 및 최종 의사결정</div>
+  </div>
+</div>
+
+<div class="connector"><div class="vline"></div></div>
+
+<!-- C-Level -->
+<div class="clevel-row">
+  <div class="clevel-box">
+    <div class="cl-title">CTO</div>
+    <div class="cl-name">김종우</div>
+  </div>
+  <div class="clevel-box">
+    <div class="cl-title">COO</div>
+    <div class="cl-name">운영 총괄</div>
+  </div>
+  <div class="clevel-box">
+    <div class="cl-title">CMO</div>
+    <div class="cl-name">마케팅 실행</div>
+    <div class="cl-note">Brand Council 상임위원</div>
+  </div>
+  <div class="clevel-box">
+    <div class="cl-title">CPO</div>
+    <div class="cl-name">프로덕트 총괄</div>
+  </div>
+</div>
+
+<!-- Teams -->
+<div class="teams-label">실무 팀 (18개)</div>
+<div class="team-grid">
+
+  <div class="cat-label">🔍 분석 & 의사결정</div>
+
+  <div class="team-card">
+    <div class="tc-num">01</div>
+    <div class="tc-name">조사팀</div>
+    <div class="tc-members">웹리서처, 시장분석가, 기술연구원, 트렌드분석가, 경쟁사분석가</div>
+  </div>
+  <div class="team-card">
+    <div class="tc-num">02</div>
+    <div class="tc-name">토론팀</div>
+    <div class="tc-members">낙관론자, 비관론자, 현실주의자, 혁신가, 보수주의자, 악마의대변인, 사회자</div>
+  </div>
+  <div class="team-card">
+    <div class="tc-num">03</div>
+    <div class="tc-name">종합팀</div>
+    <div class="tc-members">전략기획자, 보고서작성자, 리스크평가자, 의사결정지원가, 총괄디렉터</div>
+  </div>
+  <div class="team-card">
+    <div class="tc-num">04</div>
+    <div class="tc-name">퀄리티팀</div>
+    <div class="tc-members">팩트체커, 논리검증자, 편향성감사자, 품질관리자</div>
+  </div>
+
+  <div class="cat-label">🎨 제품 & 디자인</div>
+
+  <div class="team-card">
+    <div class="tc-num">05</div>
+    <div class="tc-name">기획팀</div>
+    <div class="tc-members">PM, PO, 비즈니스분석가, 프로젝트매니저</div>
+  </div>
+  <div class="team-card">
+    <div class="tc-num">06</div>
+    <div class="tc-name">디자인팀</div>
+    <div class="tc-members">UX디자이너<span class="highlight">*</span>, UI디자이너, UX리서처, 인터랙션디자이너, 브랜드디자이너<span class="highlight">*</span></div>
+  </div>
+
+  <div class="cat-label">⚙️ 엔지니어링</div>
+
+  <div class="team-card">
+    <div class="tc-num">07</div>
+    <div class="tc-name">개발팀</div>
+    <div class="tc-members">테크리드, 프론트엔드, 백엔드, 풀스택, 모바일</div>
+  </div>
+  <div class="team-card">
+    <div class="tc-num">08</div>
+    <div class="tc-name">DevOps팀</div>
+    <div class="tc-members">CI/CD엔지니어, 인프라엔지니어, SRE엔지니어, 모니터링엔지니어</div>
+  </div>
+  <div class="team-card">
+    <div class="tc-num">09</div>
+    <div class="tc-name">보안팀</div>
+    <div class="tc-members">보안아키텍트, 침투테스터, 보안분석가, 컴플라이언스담당자</div>
+  </div>
+
+  <div class="cat-label">📈 비즈니스</div>
+
+  <div class="team-card">
+    <div class="tc-num">10</div>
+    <div class="tc-name">마케팅팀</div>
+    <div class="tc-members">Brand Lead<span class="highlight">*</span>, 콘텐츠마케터<span class="highlight">*</span>, 퍼포먼스마케터, 소셜미디어매니저, 그로스해커</div>
+  </div>
+  <div class="team-card">
+    <div class="tc-num">11</div>
+    <div class="tc-name">세일즈팀</div>
+    <div class="tc-members">세일즈매니저, 어카운트매니저, SDR, 세일즈엔지니어, 파트너십매니저</div>
+  </div>
+  <div class="team-card">
+    <div class="tc-num">12</div>
+    <div class="tc-name">고객지원팀</div>
+    <div class="tc-members">CS매니저, 기술지원엔지니어, 고객성공매니저, VOC분석가</div>
+  </div>
+  <div class="team-card">
+    <div class="tc-num">13</div>
+    <div class="tc-name">데이터분석팀</div>
+    <div class="tc-members">데이터엔지니어, 데이터분석가, 데이터사이언티스트, BI분석가</div>
+  </div>
+
+  <div class="cat-label">🏛️ 경영지원</div>
+
+  <div class="team-card">
+    <div class="tc-num">14</div>
+    <div class="tc-name">법무팀</div>
+    <div class="tc-members">법무담당자, 개인정보보호담당자, 지적재산권담당자, 규제대응담당자</div>
+  </div>
+  <div class="team-card">
+    <div class="tc-num">15</div>
+    <div class="tc-name">재무팀</div>
+    <div class="tc-members">회계담당자, 예산관리자, 투자분석가</div>
+  </div>
+  <div class="team-card">
+    <div class="tc-num">17</div>
+    <div class="tc-name">문서화팀</div>
+    <div class="tc-members">테크니컬라이터, API문서작성자, 사용자가이드작성자, 에디터</div>
+  </div>
+
+  <div class="cat-label">🎯 Brand Council · CEO 직속 가상 조직</div>
+
+  <!-- Brand Council - inside the grid as team 18 -->
+  <div class="team-card brand-council" style="grid-column: 1 / -1;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <div class="tc-num">18</div>
+        <div class="tc-name">Brand Council</div>
+        <div class="tc-badge">CEO 직속 · 가상 조직 · 격주 정기회의</div>
+      </div>
+      <div style="text-align: right;">
+        <div style="font-size: 10px; color: #556677;">의결 범위</div>
+        <div style="font-size: 11px; color: #8899aa; margin-top: 2px;">브랜드 가이드라인 · 네이밍 · 톤앤매너 · 외부 커뮤니케이션</div>
+      </div>
+    </div>
+    <div class="tc-council-members">
+      <div class="tc-cm">Brand Lead (실무총괄) <span class="from">← 마케팅팀</span></div>
+      <div class="tc-cm">브랜드 디자이너 <span class="from">← 디자인팀</span></div>
+      <div class="tc-cm">콘텐츠 마케터 <span class="from">← 마케팅팀</span></div>
+      <div class="tc-cm">UX 디자이너 <span class="from">← 디자인팀</span></div>
+      <div class="tc-cm">CMO <span class="from">상임위원</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot dot-council"></div> Brand Council (CEO 직속)</div>
+  <div class="legend-item"><div class="legend-dot dot-clevel"></div> C-Level</div>
+  <div class="legend-item"><div class="legend-dot dot-team"></div> 실무팀</div>
+  <div class="legend-item"><div class="legend-dot dot-dual"></div> <span style="color:#FF8C5A;">*</span> Brand Council 겸임</div>
+</div>
+
+<!-- Roadmap -->
+<div class="teams-label" style="margin-top:32px">브랜드 조직 발전 로드맵</div>
+<div class="roadmap">
+  <div class="rm-phase active">
+    <div class="rm-label">Phase 1</div>
+    <div class="rm-title">Brand Council</div>
+    <div class="rm-when">현재 · CEO 의장</div>
+  </div>
+  <div class="rm-arrow">→</div>
+  <div class="rm-phase">
+    <div class="rm-label">Phase 2</div>
+    <div class="rm-title">Head of Brand</div>
+    <div class="rm-when">6~12개월 후 · VP급</div>
+  </div>
+  <div class="rm-arrow">→</div>
+  <div class="rm-phase">
+    <div class="rm-label">Phase 3</div>
+    <div class="rm-title">CBO 신설</div>
+    <div class="rm-when">Series B+ · C-Level</div>
+  </div>
+</div>
+
+<div class="footer">Pevo (Persistent Voice) · 헬스케어 보이스 AI 플랫폼 · 2026.02.28 기준</div>
+
+</body>
+</html>
