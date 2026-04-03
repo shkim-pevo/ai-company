@@ -60,18 +60,59 @@ jobs:
                   star_fmt="$stars"
                 fi
 
-                # 한국어 번역
+                # 한국어 번역 — 매칭되지 않는 영문은 그대로 출력
                 case "$desc" in
+                  # 개발팀
                   *"Claude Code plugin that automatically captures"*) desc="Claude Code 세션 컨텍스트 캡처 및 자동 주입 플러그인" ;;
                   *"Claude Code plugin that shows"*) desc="Claude Code 컨텍스트/에이전트/Todo 실시간 모니터링 HUD" ;;
                   *"Official"*"Anthropic"*) desc="Anthropic 공식 Claude Code 플러그인 디렉토리" ;;
+                  *"Open source AI coding agent"*) desc="오픈소스 AI 코딩 에이전트. 대형 프로젝트 및 실무 작업용" ;;
+                  *"MCP server to provide Figma"*) desc="Figma 레이아웃 정보를 AI 코딩 에이전트에 전달하는 MCP 서버" ;;
+                  *"Outcome-driven"*"agent"*) desc="Outcome 기반 에이전트 개발 프레임워크" ;;
+                  # 디자인팀
+                  *"industry standard workshop for building"*"UI components"*) desc="UI 컴포넌트 빌드/문서화/테스트 업계 표준 워크숍" ;;
+                  *"UI component framework"*"natural language"*) desc="자연어 원칙 기반 UI 컴포넌트 프레임워크" ;;
+                  *"design tokens"*) desc="크로스 플랫폼 디자인 토큰 변환 도구" ;;
+                  *"Design-to-Code"*) desc="디자인 토큰 기반 Design-to-Code React UI 라이브러리" ;;
+                  # 보안팀
+                  *"fast, customizable vulnerability scanner"*) desc="글로벌 보안 커뮤니티 기반 고속 커스터마이즈 취약점 스캐너" ;;
+                  *"OWASP Mobile Application Security"*) desc="OWASP 모바일 앱 보안 테스트 가이드" ;;
+                  *"AI Security Scanner"*) desc="AI 에이전트/MCP 보안 스캐너 — 프롬프트 인젝션 및 추출 취약점 테스트" ;;
+                  *"network security scanner"*) desc="Google 오픈소스 네트워크 보안 스캐너" ;;
+                  # DevOps팀
+                  *"Docker"*"Kubernetes"*"network trouble"*) desc="Docker+Kubernetes 네트워크 문제 해결 스위스 아미 컨테이너" ;;
+                  *"微服务商城系统"*) desc="Spring Cloud + Docker + K8s 마이크로서비스 상용 시스템" ;;
+                  *"CI/CD"*|*"continuous integration"*) desc="CI/CD 자동화 파이프라인 도구" ;;
+                  # 마케팅팀
+                  *"social media automation"*|*"outreach"*) desc="올인원 소셜 미디어 자동화/아웃리치 도구" ;;
+                  *"content marketing"*|*"SEO"*) desc="콘텐츠 마케팅 및 SEO 자동화 도구" ;;
+                  # 고객지원팀
+                  *"ticketing support system"*|*"helpdesk"*|*"Helpdesk"*) desc="오픈소스 헬프데스크 티켓 지원 시스템" ;;
+                  *"IT Management Software"*|*"ITIL"*) desc="IT 자산 관리 + ITIL 서비스 데스크" ;;
+                  *"customer"*"analytics"*) desc="고객 여정 분석 (프라이버시 우선)" ;;
+                  # 문서화팀
                   *"API documentation generator for JavaScript"*) desc="JavaScript API 문서 자동 생성" ;;
                   *"RESTful web API Documentation"*) desc="REST API 문서 자동 생성" ;;
+                  *"technical writing"*"breeze"*|*"Next.js"*"Tailwind"*"blog"*) desc="Next.js+Tailwind 기술 블로그 스타터 템플릿" ;;
+                  *"Jekyll"*"technical writing"*) desc="기술 문서 작성에 최적화된 Jekyll 테마" ;;
+                  # 데이터팀
+                  *"Agent AI Observability"*|*"agent"*"tracing"*) desc="AI 에이전트 관측/모니터링/평가 프레임워크 (Python SDK)" ;;
+                  *"AI Observability"*"Evaluation"*) desc="AI 관측성 및 평가 도구" ;;
+                  *"data pipeline"*) desc="데이터 파이프라인 자동화 도구" ;;
+                  # 기획팀
+                  *"project management"*) desc="프로젝트 관리 도구" ;;
+                  *"product roadmap"*) desc="프로덕트 로드맵 관리 도구" ;;
+                  *"agile"*) desc="애자일 프로젝트 관리 도구" ;;
+                  # 세일즈팀
+                  *"CRM"*) desc="고객 관계 관리(CRM) 시스템" ;;
+                  *"pitch deck"*) desc="투자/세일즈 피치 덱 생성 도구" ;;
+                  # 디자인리뷰팀
                   *"Jest matcher for image"*) desc="Jest 이미지 비교 — 시각적 회귀 테스트 도구" ;;
                   *"curated list"*"regression"*) desc="시각적 회귀 테스트 리소스 큐레이션" ;;
+                  *"visual regression"*) desc="시각적 회귀 테스트 도구" ;;
                 esac
 
-                echo "<${repo}|${short}> (${star_fmt} :star:) — ${desc}" >> "$R"
+                echo "<https://github.com/${repo}|${short}> (${star_fmt} :star:) — ${desc}" >> "$R"
                 TOTAL=$((TOTAL + 1))
                 idx=$((idx + 1))
               done
