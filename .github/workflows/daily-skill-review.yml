@@ -1,0 +1,69 @@
+name: Daily Team Skill Review → Slack
+
+on:
+  schedule:
+    # 매일 오전 7시 KST = UTC 22:00 (전날)
+    - cron: '0 22 * * *'
+  workflow_dispatch: # 수동 실행도 가능
+
+jobs:
+  skill-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Search GitHub for team-relevant tools
+        id: search
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "# Daily Skill Review — $(date +%Y-%m-%d)" > report.md
+          echo "" >> report.md
+
+          # Team search keywords
+          declare -A TEAMS
+          TEAMS[개발팀]="claude code plugin OR agentic development"
+          TEAMS[디자인팀]="design system generator OR design tokens AI"
+          TEAMS[DevOps팀]="CI CD automation AI OR kubernetes AI deploy"
+          TEAMS[보안팀]="AI agent security scanner OR MCP security"
+          TEAMS[마케팅팀]="content generation AI marketing"
+          TEAMS[데이터팀]="ML evaluation framework OR data pipeline AI"
+          TEAMS[기획팀]="PRD generator AI OR product roadmap tool"
+          TEAMS[문서화팀]="API documentation generator AI"
+
+          for team in "${!TEAMS[@]}"; do
+            query="${TEAMS[$team]}"
+            echo "Searching for $team: $query"
+
+            results=$(gh search repos "$query" --stars=">50" --sort=stars --limit=3 --json fullName,description,stargazersCount 2>/dev/null || echo "[]")
+
+            if [ "$results" != "[]" ] && [ -n "$results" ]; then
+              echo "### $team" >> report.md
+              echo "$results" | jq -r '.[] | "- [\(.fullName)](https://github.com/\(.fullName)) (\(.stargazersCount) ⭐) — \(.description // "설명 없음")"' >> report.md 2>/dev/null
+              echo "" >> report.md
+            fi
+          done
+
+          echo "---" >> report.md
+          echo "_자동 생성: GitHub Actions daily-skill-review_" >> report.md
+
+          # Save for next step
+          cat report.md
+
+      - name: Post to Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "SLACK_WEBHOOK_URL not set, skipping Slack notification"
+            exit 0
+          fi
+
+          # Build Slack message from report
+          REPORT=$(cat report.md | head -50)
+
+          PAYLOAD=$(jq -n --arg text "$REPORT" '{text: $text}')
+
+          curl -X POST -H 'Content-type: application/json' \
+            --data "$PAYLOAD" \
+            "$SLACK_WEBHOOK_URL" || echo "Slack post failed"
