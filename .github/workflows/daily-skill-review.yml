@@ -35,7 +35,7 @@ jobs:
 
             if [ "$len" -gt 0 ] 2>/dev/null; then
               echo "" >> "$R"
-              echo "${icon} *${name}*" >> "$R"
+              echo "${icon} ${name}" >> "$R"
               TEAM_FOUND=$((TEAM_FOUND + 1))
 
               # 각 레포를 인덱스로 접근 (서브쉘 방지)
