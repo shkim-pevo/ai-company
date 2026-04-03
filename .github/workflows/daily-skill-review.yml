@@ -17,75 +17,70 @@ jobs:
         run: |
           DATE=$(date +%Y-%m-%d)
 
-          echo ":mag: *매일 GitHub 스킬 검토 리포트* — $DATE" > report.txt
-          echo "" >> report.txt
-          echo "*추천 도구/스킬 요약:*" >> report.txt
-          echo "" >> report.txt
+          # 팀별 아이콘 + 이름 + 검색어 정의
+          declare -a TEAM_ICONS TEAM_NAMES TEAM_QUERIES
 
-          FOUND=0
+          TEAM_ICONS=(":microscope:" ":speech_balloon:" ":clipboard:" ":white_check_mark:" ":bulb:" ":art:" ":computer:" ":gear:" ":shield:" ":chart_with_upwards_trend:" ":briefcase:" ":headphones:" ":bar_chart:" ":scales:" ":moneybag:" ":crown:" ":page_facing_up:" ":rainbow:" ":dart:" ":pill:" ":busts_in_silhouette:" ":mag_right:")
+          TEAM_NAMES=("조사팀" "토론팀" "종합팀" "퀄리티팀" "기획팀" "디자인팀" "개발팀" "DevOps팀" "보안팀" "마케팅팀" "세일즈팀" "고객지원팀" "데이터팀" "법무팀" "재무팀" "리더십팀" "문서화팀" "브랜드팀" "전략팀" "추천엔진팀" "인사팀" "디자인리뷰팀")
+          TEAM_QUERIES=("market research tool" "AI debate framework" "report generation AI" "fact checking AI tool" "PRD generator AI" "design system generator" "claude code plugin" "CI CD automation AI" "AI security scanner" "content generation AI marketing" "pitch deck generator AI" "customer journey mapping tool" "ML evaluation framework" "legal document AI" "SaaS metrics dashboard" "OKR framework tool" "API documentation generator" "brand guidelines generator" "TAM calculator market sizing" "healthcare recommendation AI" "recruitment automation AI" "visual regression testing")
 
-          # 영어 description → 한국어 번역 함수
-          translate() {
+          # 번역 함수
+          translate_desc() {
             sed \
-              -e 's/A Claude Code plugin that automatically captures everything Claude does during your coding sessions, compresses it with AI.*$/Claude Code 세션 컨텍스트를 자동 캡처하고 AI로 압축하여 다음 세션에 주입하는 플러그인/g' \
-              -e 's/A Claude Code plugin that shows what.*$/Claude Code 실시간 모니터링 — 컨텍스트, 도구, 에이전트, Todo 현황 표시/g' \
+              -e 's/A Claude Code plugin that automatically captures everything Claude does during your coding sessions, compresses it with AI.*$/Claude Code 세션 컨텍스트 캡처 및 자동 주입 플러그인/g' \
+              -e 's/A Claude Code plugin that shows what.*$/Claude Code 컨텍스트\/에이전트\/Todo 실시간 모니터링 HUD/g' \
               -e 's/Official.*Anthropic.*managed.*directory.*$/Anthropic 공식 Claude Code 플러그인 디렉토리/g' \
               -e 's/No description/설명 없음/g' \
-              -e 's/API documentation generator.*$/API 문서 자동 생성 도구/g' \
-              -e 's/visual regression testing.*$/시각적 회귀 테스트 도구/g' \
-              -e 's/An open source.*$/오픈소스 도구/g' \
-              -e 's/A collection.*$/큐레이션 컬렉션/g' \
-              -e 's/A curated.*$/큐레이션 목록/g'
+              -e 's/^$/설명 없음/g'
           }
 
-          search() {
-            local team="$1" query="$2"
-            echo ">> 검색 중: $team"
+          # 리포트 시작
+          echo ":mag: *팀별 추천 도구/스킬:*" > report.txt
 
-            local raw
+          FOUND=0
+          TEAM_FOUND=0
+
+          for i in "${!TEAM_NAMES[@]}"; do
+            icon="${TEAM_ICONS[$i]}"
+            name="${TEAM_NAMES[$i]}"
+            query="${TEAM_QUERIES[$i]}"
+
+            echo ">> 검색 중: $name"
+
             raw=$(gh search repos "$query" --stars=">50" --sort=stars --limit=3 --json fullName,description,stargazersCount 2>/dev/null || echo "[]")
-
-            local len
             len=$(echo "$raw" | jq 'length' 2>/dev/null || echo "0")
 
             if [ "$len" -gt 0 ] 2>/dev/null; then
-              echo "$raw" | jq -r --arg t "$team" \
-                'limit(2;.[]) | ":small_blue_diamond: *\($t)* — <https://github.com/\(.fullName)|\(.fullName)> (\(.stargazersCount) :star:)\n> \(.description // "설명 없음")\n"' \
-                | translate >> report.txt
-              local added
+              # 팀 헤더
+              echo "${icon} *${name}*" >> report.txt
+
+              # 상위 2개 레포
+              echo "$raw" | jq -r 'limit(2;.[]) | "\(.fullName)\t\(.stargazersCount)\t\(.description // "No description")"' | while IFS=$'\t' read -r repo stars desc; do
+                # 스타 포맷 (1000 이상이면 K로)
+                if [ "$stars" -ge 1000 ]; then
+                  star_fmt="$(echo "scale=1; $stars / 1000" | bc)K"
+                else
+                  star_fmt="$stars"
+                fi
+                # 레포 이름만 추출 (user/repo → repo)
+                repo_short="${repo##*/}"
+                # 번역
+                desc_kr=$(echo "$desc" | translate_desc)
+                echo "<https://github.com/${repo}|${repo_short}> (${star_fmt} :star:) — ${desc_kr}" >> report.txt
+              done
+
               added=$(echo "$raw" | jq 'limit(2;.[]) | 1' | wc -l | tr -d ' ')
               FOUND=$((FOUND + added))
+              TEAM_FOUND=$((TEAM_FOUND + 1))
               echo "   발견: $added개"
             else
               echo "   결과 없음"
             fi
-          }
-
-          search "01-조사팀"       "market research tool"
-          search "02-토론팀"       "AI debate framework"
-          search "03-종합팀"       "report generation AI"
-          search "04-퀄리티팀"     "fact checking AI tool"
-          search "05-기획팀"       "PRD generator AI"
-          search "06-디자인팀"     "design system generator"
-          search "07-개발팀"       "claude code plugin"
-          search "08-DevOps팀"     "CI CD automation AI"
-          search "09-보안팀"       "AI security scanner"
-          search "10-마케팅팀"     "content generation AI marketing"
-          search "11-세일즈팀"     "pitch deck generator AI"
-          search "12-고객지원팀"   "customer journey mapping tool"
-          search "13-데이터팀"     "ML evaluation framework"
-          search "14-법무팀"       "legal document AI"
-          search "15-재무팀"       "SaaS metrics dashboard"
-          search "16-리더십팀"     "OKR framework tool"
-          search "17-문서화팀"     "API documentation generator"
-          search "18-브랜드팀"     "brand guidelines generator"
-          search "19-전략팀"       "TAM calculator market sizing"
-          search "20-추천엔진팀"   "healthcare recommendation AI"
-          search "21-인사팀"       "recruitment automation AI"
-          search "22-디자인리뷰팀" "visual regression testing"
+          done
 
           echo "" >> report.txt
-          echo "_총 ${FOUND}개 추천 발견. 적용 필요 시 알려주세요!_" >> report.txt
+          echo "_총 ${TEAM_FOUND}개 팀에서 ${FOUND}개 추천. 적용 필요 시 알려주세요!_" >> report.txt
+          echo "_이 리포트는 매일 오전 7시에 자동 발송됩니다._" >> report.txt
 
           echo "=== 총 발견: $FOUND개 ==="
           cat report.txt
@@ -101,7 +96,7 @@ jobs:
             exit 0
           fi
 
-          TEXT=$(cat report.txt | head -60)
+          TEXT=$(cat report.txt | head -80)
           curl -sf -X POST -H 'Content-type: application/json' \
             --data "$(jq -n --arg t "$TEXT" '{text:$t}')" \
             "$SLACK_WEBHOOK_URL" && echo "Slack 포스팅 완료" || echo "Slack 포스팅 실패"
