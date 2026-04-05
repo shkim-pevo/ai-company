@@ -11,33 +11,46 @@ jobs:
     timeout-minutes: 15
 
     steps:
+      - uses: actions/checkout@v4
+
       - name: 팀별 GitHub 스킬 검토
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           DATE=$(date +%Y-%m-%d)
+          DOW=$(date +%u)  # 1=월 ~ 7=일
           R="report.txt"
 
-          echo ":mag: *팀별 추천 도구/스킬:*" > "$R"
+          echo ":mag: *팀별 추천 도구/스킬:*  ($DATE)" > "$R"
 
           TOTAL=0
           TEAM_COUNT=0
 
+          # 이전에 추천한 레포 목록 (중복 방지)
+          HISTORY_FILE=".github/skill-history.txt"
+          touch "$HISTORY_FILE"
+
           search() {
-            local icon="$1" name="$2" shift; shift
-            shift; shift
+            local icon="$1" name="$2"
+            shift 2
             local queries=("$@")
 
-            # 여러 키워드로 검색 후 병합
             echo "[]" > _team.json
             for q in "${queries[@]}"; do
-              raw=$(gh search repos "$q" --stars=">5000" --sort=stars --limit=5 \
+              raw=$(gh search repos "$q" --stars=">5000" --sort=stars --limit=10 \
                 --json fullName,description,stargazersCount 2>/dev/null || echo "[]")
               jq -s '.[0] + .[1]' _team.json <(echo "$raw") > _tmp.json && mv _tmp.json _team.json
             done
 
-            # 중복 제거 + 스타순 정렬 + 상위 2개
-            jq '[group_by(.fullName)[] | max_by(.stargazersCount)] | sort_by(-.stargazersCount) | limit(2;.[])' _team.json > _top.json
+            # 중복 제거 + 스타순 정렬 + 이미 추천한 레포 제외 + 상위 2개
+            local history
+            history=$(cat "$HISTORY_FILE" | tr '\n' '|' | sed 's/|$//')
+            if [ -n "$history" ]; then
+              jq --arg h "$history" '[group_by(.fullName)[] | max_by(.stargazersCount)] | [.[] | select(.fullName | test($h) | not)] | sort_by(-.stargazersCount) | limit(2;.[])' _team.json > _top.json
+            else
+              jq '[group_by(.fullName)[] | max_by(.stargazersCount)] | sort_by(-.stargazersCount) | limit(2;.[])' _team.json > _top.json
+            fi
+
             local count
             count=$(jq -s 'length' _top.json)
 
@@ -60,57 +73,8 @@ jobs:
                   star_fmt="$stars"
                 fi
 
-                # 한국어 번역 — 매칭되지 않는 영문은 그대로 출력
-                case "$desc" in
-                  # 개발팀
-                  *"Claude Code plugin that automatically captures"*) desc="Claude Code 세션 컨텍스트 캡처 및 자동 주입 플러그인" ;;
-                  *"Claude Code plugin that shows"*) desc="Claude Code 컨텍스트/에이전트/Todo 실시간 모니터링 HUD" ;;
-                  *"Official"*"Anthropic"*) desc="Anthropic 공식 Claude Code 플러그인 디렉토리" ;;
-                  *"Open source AI coding agent"*) desc="오픈소스 AI 코딩 에이전트. 대형 프로젝트 및 실무 작업용" ;;
-                  *"MCP server to provide Figma"*) desc="Figma 레이아웃 정보를 AI 코딩 에이전트에 전달하는 MCP 서버" ;;
-                  *"Outcome-driven"*"agent"*) desc="Outcome 기반 에이전트 개발 프레임워크" ;;
-                  # 디자인팀
-                  *"industry standard workshop for building"*"UI components"*) desc="UI 컴포넌트 빌드/문서화/테스트 업계 표준 워크숍" ;;
-                  *"UI component framework"*"natural language"*) desc="자연어 원칙 기반 UI 컴포넌트 프레임워크" ;;
-                  *"design tokens"*) desc="크로스 플랫폼 디자인 토큰 변환 도구" ;;
-                  *"Design-to-Code"*) desc="디자인 토큰 기반 Design-to-Code React UI 라이브러리" ;;
-                  # 보안팀
-                  *"fast, customizable vulnerability scanner"*) desc="글로벌 보안 커뮤니티 기반 고속 커스터마이즈 취약점 스캐너" ;;
-                  *"OWASP Mobile Application Security"*) desc="OWASP 모바일 앱 보안 테스트 가이드" ;;
-                  *"AI Security Scanner"*) desc="AI 에이전트/MCP 보안 스캐너 — 프롬프트 인젝션 및 추출 취약점 테스트" ;;
-                  *"network security scanner"*) desc="Google 오픈소스 네트워크 보안 스캐너" ;;
-                  # DevOps팀
-                  *"Docker"*"Kubernetes"*"network trouble"*) desc="Docker+Kubernetes 네트워크 문제 해결 스위스 아미 컨테이너" ;;
-                  *"微服务商城系统"*) desc="Spring Cloud + Docker + K8s 마이크로서비스 상용 시스템" ;;
-                  *"CI/CD"*|*"continuous integration"*) desc="CI/CD 자동화 파이프라인 도구" ;;
-                  # 마케팅팀
-                  *"social media automation"*|*"outreach"*) desc="올인원 소셜 미디어 자동화/아웃리치 도구" ;;
-                  *"content marketing"*|*"SEO"*) desc="콘텐츠 마케팅 및 SEO 자동화 도구" ;;
-                  # 고객지원팀
-                  *"ticketing support system"*|*"helpdesk"*|*"Helpdesk"*) desc="오픈소스 헬프데스크 티켓 지원 시스템" ;;
-                  *"IT Management Software"*|*"ITIL"*) desc="IT 자산 관리 + ITIL 서비스 데스크" ;;
-                  *"customer"*"analytics"*) desc="고객 여정 분석 (프라이버시 우선)" ;;
-                  # 문서화팀
-                  *"API documentation generator for JavaScript"*) desc="JavaScript API 문서 자동 생성" ;;
-                  *"RESTful web API Documentation"*) desc="REST API 문서 자동 생성" ;;
-                  *"technical writing"*"breeze"*|*"Next.js"*"Tailwind"*"blog"*) desc="Next.js+Tailwind 기술 블로그 스타터 템플릿" ;;
-                  *"Jekyll"*"technical writing"*) desc="기술 문서 작성에 최적화된 Jekyll 테마" ;;
-                  # 데이터팀
-                  *"Agent AI Observability"*|*"agent"*"tracing"*) desc="AI 에이전트 관측/모니터링/평가 프레임워크 (Python SDK)" ;;
-                  *"AI Observability"*"Evaluation"*) desc="AI 관측성 및 평가 도구" ;;
-                  *"data pipeline"*) desc="데이터 파이프라인 자동화 도구" ;;
-                  # 기획팀
-                  *"project management"*) desc="프로젝트 관리 도구" ;;
-                  *"product roadmap"*) desc="프로덕트 로드맵 관리 도구" ;;
-                  *"agile"*) desc="애자일 프로젝트 관리 도구" ;;
-                  # 세일즈팀
-                  *"CRM"*) desc="고객 관계 관리(CRM) 시스템" ;;
-                  *"pitch deck"*) desc="투자/세일즈 피치 덱 생성 도구" ;;
-                  # 디자인리뷰팀
-                  *"Jest matcher for image"*) desc="Jest 이미지 비교 — 시각적 회귀 테스트 도구" ;;
-                  *"curated list"*"regression"*) desc="시각적 회귀 테스트 리소스 큐레이션" ;;
-                  *"visual regression"*) desc="시각적 회귀 테스트 도구" ;;
-                esac
+                # 히스토리에 기록
+                echo "$repo" >> "$HISTORY_FILE"
 
                 echo "<https://github.com/${repo}|${short}> (${star_fmt} :star:) — ${desc}" >> "$R"
                 TOTAL=$((TOTAL + 1))
@@ -120,23 +84,52 @@ jobs:
             rm -f _team.json _top.json _tmp.json
           }
 
-          search ":computer:"            "개발팀"         "claude code plugin" "agentic development framework" "AI coding agent"
-          search ":art:"                 "디자인팀"       "design system" "design tokens" "UI component"
-          search ":shield:"              "보안팀"         "AI security" "vulnerability scanner" "security testing"
-          search ":chart_with_upwards_trend:" "마케팅팀"   "content marketing" "social media automation" "SEO tool"
-          search ":gear:"                "DevOps팀"       "CI CD pipeline" "docker kubernetes" "infrastructure automation"
-          search ":headphones:"          "고객지원팀"     "customer support" "helpdesk" "customer analytics"
-          search ":page_facing_up:"      "문서화팀"       "API documentation" "technical writing" "docs generator"
-          search ":bar_chart:"           "데이터팀"       "data pipeline" "ML evaluation" "AI observability"
-          search ":bulb:"                "기획팀"         "product roadmap" "project management" "agile tool"
-          search ":briefcase:"           "세일즈팀"       "CRM" "sales automation" "pitch deck"
-          search ":mag_right:"           "디자인리뷰팀"   "visual regression" "screenshot testing" "design QA"
+          # 요일별 키워드 로테이션 (매일 다른 검색어)
+          case $DOW in
+            1) # 월요일
+              search ":computer:" "개발팀"         "claude code plugin" "AI coding agent"
+              search ":art:"     "디자인팀"       "design system" "figma plugin"
+              search ":shield:"  "보안팀"         "AI security" "vulnerability scanner"
+              ;;
+            2) # 화요일
+              search ":gear:"          "DevOps팀"     "CI CD pipeline" "docker kubernetes"
+              search ":headphones:"    "고객지원팀"   "customer support" "helpdesk"
+              search ":bar_chart:"     "데이터팀"     "data pipeline" "ML evaluation"
+              ;;
+            3) # 수요일
+              search ":bulb:"          "기획팀"       "product roadmap" "agile tool"
+              search ":page_facing_up:" "문서화팀"    "API documentation" "technical writing"
+              search ":briefcase:"     "세일즈팀"     "CRM" "sales automation"
+              ;;
+            4) # 목요일
+              search ":computer:"      "개발팀"       "agentic framework" "developer tools"
+              search ":chart_with_upwards_trend:" "마케팅팀" "content marketing" "SEO tool"
+              search ":mag_right:"     "디자인리뷰팀" "visual regression" "screenshot testing"
+              ;;
+            5) # 금요일
+              search ":art:"           "디자인팀"     "design tokens" "UI component"
+              search ":shield:"        "보안팀"       "security testing" "OWASP"
+              search ":bar_chart:"     "데이터팀"     "AI observability" "analytics dashboard"
+              ;;
+            6|7) # 주말
+              search ":computer:"      "개발팀"       "open source AI" "LLM tools"
+              search ":gear:"          "DevOps팀"     "infrastructure automation" "monitoring"
+              search ":bulb:"          "기획팀"       "project management" "collaboration tool"
+              ;;
+          esac
 
           echo "" >> "$R"
           echo "_총 ${TEAM_COUNT}개 팀에서 ${TOTAL}개 추천. 적용 필요 시 알려주세요!_" >> "$R"
           echo "_이 리포트는 매일 오전 7시에 자동 발송됩니다._" >> "$R"
 
           cat "$R"
+
+          # 히스토리 파일 커밋 (최근 100개만 유지)
+          tail -100 "$HISTORY_FILE" > _tmp_hist && mv _tmp_hist "$HISTORY_FILE"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "$HISTORY_FILE"
+          git diff --cached --quiet || git commit -m "chore: 스킬 추천 히스토리 업데이트 ($DATE)" && git push || true
 
       - name: Slack 포스팅
         if: always()
