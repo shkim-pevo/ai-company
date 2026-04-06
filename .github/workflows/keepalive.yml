@@ -5,6 +5,9 @@ on:
     - cron: '0 21 * * *'  # 매일 KST 06:00 (스킬 검토 1시간 전)
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 concurrency:
   group: keepalive
   cancel-in-progress: true
