@@ -1,0 +1,6 @@
+thedotmack/claude-mem
+jarrodwatts/claude-hud
+karanpratapsingh/system-design
+VoltAgent/awesome-design-md
+projectdiscovery/nuclei
+The-Art-of-Hacking/h4cker
