@@ -4,3 +4,9 @@ karanpratapsingh/system-design
 VoltAgent/awesome-design-md
 projectdiscovery/nuclei
 The-Art-of-Hacking/h4cker
+harness/harness
+macrozheng/mall-swarm
+uvdesk/community-skeleton
+glpi-project/glpi
+DataTalksClub/data-engineering-zoomcamp
+PrefectHQ/prefect
