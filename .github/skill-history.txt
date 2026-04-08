@@ -10,3 +10,8 @@ uvdesk/community-skeleton
 glpi-project/glpi
 DataTalksClub/data-engineering-zoomcamp
 PrefectHQ/prefect
+logseq/logseq
+freeCodeCamp/devdocs
+jsdoc/jsdoc
+twentyhq/twenty
+YunaiV/ruoyi-vue-pro
