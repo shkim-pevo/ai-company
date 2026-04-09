@@ -15,3 +15,5 @@ freeCodeCamp/devdocs
 jsdoc/jsdoc
 twentyhq/twenty
 YunaiV/ruoyi-vue-pro
+FoundationAgents/MetaGPT
+rome/tools
