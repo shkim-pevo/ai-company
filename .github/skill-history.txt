@@ -17,3 +17,9 @@ twentyhq/twenty
 YunaiV/ruoyi-vue-pro
 FoundationAgents/MetaGPT
 rome/tools
+storybookjs/storybook
+Semantic-Org/Semantic-UI
+OWASP/CheatSheetSeries
+MobSF/Mobile-Security-Framework-MobSF
+raga-ai-hub/RagaAI-Catalyst
+Arize-ai/phoenix
