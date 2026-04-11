@@ -23,3 +23,9 @@ OWASP/CheatSheetSeries
 MobSF/Mobile-Security-Framework-MobSF
 raga-ai-hub/RagaAI-Catalyst
 Arize-ai/phoenix
+google-gemini/gemini-cli
+mudler/LocalAI
+louislam/uptime-kuma
+netdata/netdata
+makeplane/plane
+hcengineering/platform
