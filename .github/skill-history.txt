@@ -29,3 +29,9 @@ louislam/uptime-kuma
 netdata/netdata
 makeplane/plane
 hcengineering/platform
+upscayl/upscayl
+onyx-dot-app/onyx
+grafana/grafana
+prometheus/prometheus
+opf/openproject
+kanboard/kanboard
