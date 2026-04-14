@@ -35,3 +35,8 @@ grafana/grafana
 prometheus/prometheus
 opf/openproject
 kanboard/kanboard
+kubescape/kubescape
+nicolaka/netshoot
+zammad/zammad
+vectordotdev/vector
+airbytehq/airbyte
