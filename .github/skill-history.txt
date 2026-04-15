@@ -40,3 +40,7 @@ nicolaka/netshoot
 zammad/zammad
 vectordotdev/vector
 airbytehq/airbyte
+swaggo/swag
+timlrx/tailwind-nextjs-starter-blog
+frappe/erpnext
+monicahq/monica
