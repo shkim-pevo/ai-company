@@ -44,3 +44,5 @@ swaggo/swag
 timlrx/tailwind-nextjs-starter-blog
 frappe/erpnext
 monicahq/monica
+apollographql/apollo-client
+Tencent/vConsole
