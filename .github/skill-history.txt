@@ -46,3 +46,7 @@ frappe/erpnext
 monicahq/monica
 apollographql/apollo-client
 Tencent/vConsole
+tailwindlabs/headlessui
+vueComponent/ant-design-vue
+vitalysim/Awesome-Hacking-Resources
+owasp-amass/amass
