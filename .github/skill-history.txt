@@ -54,3 +54,9 @@ radix-ui/primitives
 airyland/vux
 juice-shop/juice-shop
 OWASP/mastg
+MemPalace/mempalace
+mlflow/mlflow
+sansan0/TrendRadar
+huginn/huginn
+Leantime/leantime
+automazeio/ccpm
