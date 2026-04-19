@@ -60,3 +60,9 @@ sansan0/TrendRadar
 huginn/huginn
 Leantime/leantime
 automazeio/ccpm
+onlook-dev/onlook
+deepset-ai/haystack
+koala73/worldmonitor
+ruvnet/RuView
+pypa/hatch
+JordanKnott/taskcafe
