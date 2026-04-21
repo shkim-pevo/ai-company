@@ -69,3 +69,4 @@ JordanKnott/taskcafe
 weaveworks/scope
 mage-ai/mage-ai
 evidentlyai/evidently
+cloudquery/cloudquery
