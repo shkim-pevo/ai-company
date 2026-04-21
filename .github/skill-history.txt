@@ -66,3 +66,6 @@ koala73/worldmonitor
 ruvnet/RuView
 pypa/hatch
 JordanKnott/taskcafe
+weaveworks/scope
+mage-ai/mage-ai
+evidentlyai/evidently
