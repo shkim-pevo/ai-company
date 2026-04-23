@@ -70,3 +70,5 @@ weaveworks/scope
 mage-ai/mage-ai
 evidentlyai/evidently
 cloudquery/cloudquery
+TransformerOptimus/SuperAGI
+camel-ai/camel
