@@ -76,3 +76,7 @@ material-components/material-components-android
 material-components/material-components-web
 OWASP/wstg
 dependency-check/DependencyCheck
+primefaces/primevue
+primefaces/primeng
+paragonie/awesome-appsec
+infoslack/awesome-web-hacking
