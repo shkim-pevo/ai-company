@@ -72,3 +72,7 @@ evidentlyai/evidently
 cloudquery/cloudquery
 TransformerOptimus/SuperAGI
 camel-ai/camel
+material-components/material-components-android
+material-components/material-components-web
+OWASP/wstg
+dependency-check/DependencyCheck
