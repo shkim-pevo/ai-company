@@ -80,3 +80,8 @@ primefaces/primevue
 primefaces/primeng
 paragonie/awesome-appsec
 infoslack/awesome-web-hacking
+usestrix/strix
+QwenLM/qwen-code
+apache/airflow
+GitSquared/edex-ui
+lukevella/rallly
