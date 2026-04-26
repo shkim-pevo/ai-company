@@ -85,3 +85,4 @@ QwenLM/qwen-code
 apache/airflow
 GitSquared/edex-ui
 lukevella/rallly
+CoplayDev/unity-mcp
