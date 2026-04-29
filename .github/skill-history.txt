@@ -86,3 +86,7 @@ apache/airflow
 GitSquared/edex-ui
 lukevella/rallly
 CoplayDev/unity-mcp
+cotes2020/jekyll-theme-chirpy
+apidoc/apidoc
+krayin/laravel-crm
+nocobase/nocobase
