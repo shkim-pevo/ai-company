@@ -90,3 +90,5 @@ cotes2020/jekyll-theme-chirpy
 apidoc/apidoc
 krayin/laravel-crm
 nocobase/nocobase
+pydantic/pydantic-ai
+QwenLM/Qwen-Agent
