@@ -92,3 +92,5 @@ krayin/laravel-crm
 nocobase/nocobase
 pydantic/pydantic-ai
 QwenLM/Qwen-Agent
+DouyinFE/semi-design
+EmenstaNougat/ESP32-BlueJammer
