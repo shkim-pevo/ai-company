@@ -1,6 +1,3 @@
-thedotmack/claude-mem
-jarrodwatts/claude-hud
-karanpratapsingh/system-design
 VoltAgent/awesome-design-md
 projectdiscovery/nuclei
 The-Art-of-Hacking/h4cker
@@ -95,3 +92,9 @@ QwenLM/Qwen-Agent
 DouyinFE/semi-design
 EmenstaNougat/ESP32-BlueJammer
 jamiepine/voicebox
+addyosmani/agent-skills
+anthropics/claude-plugins-official
+alexpate/awesome-design-systems
+nexu-io/open-design
+anchore/grype
+future-architect/vuls
