@@ -1,6 +1,3 @@
-glpi-project/glpi
-DataTalksClub/data-engineering-zoomcamp
-PrefectHQ/prefect
 logseq/logseq
 freeCodeCamp/devdocs
 jsdoc/jsdoc
@@ -98,3 +95,6 @@ karanpratapsingh/system-design
 primer/css
 google/osv-scanner
 aliasrobotics/cai
+harness/harness
+macrozheng/mall-swarm
+uvdesk/community-skeleton
