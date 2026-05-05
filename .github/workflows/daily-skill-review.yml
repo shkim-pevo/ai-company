@@ -1,8 +1,6 @@
 name: 매일 GitHub 스킬 검토 → Slack
 
 on:
-  schedule:
-    - cron: '0 22 * * *'
   workflow_dispatch:
 
 permissions:

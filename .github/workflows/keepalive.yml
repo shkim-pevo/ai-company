@@ -1,8 +1,6 @@
 name: Keepalive — 스케줄 워크플로우 활성 유지
 
 on:
-  schedule:
-    - cron: '0 21 * * *'  # 매일 KST 06:00 (스킬 검토 1시간 전)
   workflow_dispatch:
 
 permissions:
